@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZO SYSTEM - 管理画面</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav class="sidebar" style="width:250px; background:linear-gradient(180deg,#4e73df 10%,#224abe 100%); color:white; position:fixed; height:100vh; padding-top:20px;">
+    <div style="text-align:center; font-size:1.2rem; font-weight:bold; margin-bottom:20px;">ZO SYSTEM</div>
+    
+    <a href="#" class="d-block p-3 text-white text-decoration-none fw-bold" style="background:rgba(255,255,255,0.1);">
+      <i class="fas fa-tachometer-alt me-2"></i>ダッシュボード
+    </a>
+    
+    <a href="admin_input.html" class="d-block p-3 text-white text-decoration-none fw-bold">
+      <i class="fas fa-edit me-2"></i>管理者入力
+    </a>
+
+    <a href="#" class="d-block p-3 text-white text-decoration-none fw-bold" onclick="openCustomerModal()">
+      <i class="fas fa-user-plus me-2"></i>顧客登録
+    </a>
+    
+    <hr style="border-top:1px solid rgba(255,255,255,0.3); margin: 10px 0;">
+    
+    <a href="index.html" class="d-block p-3 text-white-50 text-decoration-none">
+      <i class="fas fa-sign-out-alt me-2"></i>注文入力へ戻る
+    </a>
+  </nav>
+
+  <div class="content-wrapper" style="margin-left:250px; padding:30px;">
+    <div class="d-flex justify-content-between mb-4">
+      <h3 class="text-secondary fw-bold">Dashboard</h3>
+      <button class="btn btn-success fw-bold" onclick="openCustomerModal()"><i class="fas fa-user-plus me-2"></i>顧客登録</button>
+    </div>
+
+    <div class="row g-4 mb-4">
+      <div class="col-4"><div class="bg-white p-3 rounded shadow-sm border-start border-5 border-primary"><div class="text-primary small fw-bold">登録顧客数</div><div class="h3 fw-bold text-dark" id="customerCount">-</div></div></div>
+      <div class="col-4"><div class="bg-white p-3 rounded shadow-sm border-start border-5 border-success"><div class="text-success small fw-bold">総注文数</div><div class="h3 fw-bold text-dark" id="totalCount">-</div></div></div>
+      <div class="col-4"><div class="bg-white p-3 rounded shadow-sm border-start border-5 border-warning"><div class="text-warning small fw-bold">今月の注文</div><div class="h3 fw-bold text-dark" id="monthlyCount">-</div></div></div>
+    </div>
+
+    <div class="bg-white rounded shadow-sm overflow-hidden">
+      <div class="p-3 border-bottom fw-bold bg-light">注文履歴</div>
+      <table class="table mb-0 table-hover">
+        <thead class="bg-light"><tr><th>状況</th><th>日付/ID</th><th>顧客/担当</th><th>チーム</th><th>操作</th></tr></thead>
+        <tbody id="tableBody"><tr><td colspan="5" class="text-center p-4">読込中...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="modal fade" id="customerModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header bg-success text-white"><h5 class="modal-title fw-bold">顧客登録</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body">
+          <div class="mb-3"><label class="small fw-bold">ID (ログイン用)</label><input type="text" id="regId" class="form-control" placeholder="例: 1001"></div>
+          <div class="mb-3"><label class="small fw-bold">パスワード</label><input type="text" id="regPass" class="form-control" placeholder="例: pass1234"></div>
+          <div class="row g-2 mb-3">
+            <div class="col-6"><label class="small fw-bold">顧客名</label><input type="text" id="regCustomer" class="form-control" placeholder="例: GOOスポーツ"></div>
+            <div class="col-6"><label class="small fw-bold">担当者</label><input type="text" id="regManager" class="form-control" placeholder="例: 大海"></div>
+          </div>
+          <div class="mb-3"><label class="small fw-bold">Google Drive URL (PDFフォルダ)</label><input type="text" id="regUrl" class="form-control" placeholder="https://drive.google.com/..."></div>
+        </div>
+        <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">閉じる</button><button class="btn btn-success fw-bold" onclick="saveCustomer()">登録</button></div>
+      </div>
+    </div>
+  </div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<script>
+// Firebase設定
+const firebaseConfig = { apiKey: "AIzaSyALhaQtGangXuyhBI97aUttdO0lLscWMgQ", authDomain: "order-system-ddd6c.firebaseapp.com", projectId: "order-system-ddd6c", storageBucket: "order-system-ddd6c.firebasestorage.app", messagingSenderId: "668688430410", appId: "1:668688430410:web:b51d6c2fe31680cb46bdb3" };
+try { firebase.initializeApp(firebaseConfig); } catch(e){}
+const db = firebase.firestore();
+
+// 画面読み込み時
+window.onload = function() {
+  if(!db) return;
+  
+  // 注文データの読み込み
+  db.collection("orders").orderBy("作成日","desc").limit(50).get().then(snap => {
+    const tb = document.getElementById('tableBody'); tb.innerHTML="";
+    if(snap.empty) { tb.innerHTML='<tr><td colspan="5" class="text-center p-4">データなし</td></tr>'; return; }
+    
+    snap.forEach(doc => {
+      const d=doc.data();
+      const tr=document.createElement('tr');
+      // 日付フォーマット
+      let dateStr = '-';
+      if(d.作成日 && d.作成日.toDate) {
+          dateStr = d.作成日.toDate().toLocaleDateString();
+      }
+      
+      tr.innerHTML=`
+        <td><span class="badge bg-secondary">受付</span></td>
+        <td>${dateStr}<br><small class="text-muted">#${d.orderId || d.受注NO || '-'}</small></td>
+        <td>${d.customer || d.顧客名}<br><small class="text-muted">${d.manager || d.担当者}</small></td>
+        <td>${d.team || d.チーム名}</td>
+        <td><button class="btn btn-sm btn-outline-primary">詳細</button></td>`;
+      tb.appendChild(tr);
+    });
+    document.getElementById('totalCount').innerText = snap.size;
+  });
+
+  // 顧客数のカウント
+  db.collection("customers").get().then(s => document.getElementById('customerCount').innerText = s.size);
+};
+
+// 顧客登録モーダルを開く
+function openCustomerModal() {
+  ['regId','regPass','regCustomer','regManager','regUrl'].forEach(i=>document.getElementById(i).value='');
+  new bootstrap.Modal(document.getElementById('customerModal')).show();
+}
+
+// 顧客を保存する
+function saveCustomer() {
+  const id = document.getElementById('regId').value;
+  if(!id) return alert("IDは必須です");
+  
+  db.collection("customers").doc(id).set({
+    id: id, 
+    pass: document.getElementById('regPass').value,
+    customer: document.getElementById('regCustomer').value,
+    manager: document.getElementById('regManager').value,
+    pdf: document.getElementById('regUrl').value,
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  }).then(()=>{ 
+      alert("登録しました"); 
+      location.reload(); 
+  }).catch(e=>alert("エラー:"+e));
+}
+</script>
+</body>
+</html>

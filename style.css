@@ -1,0 +1,325 @@
+/* =========================================
+   ZO SYSTEM - Integrated Complete Style
+   ========================================= */
+:root {
+    /* カラーパレット */
+    --primary: #0b4279;       /* メイン：ネイビーグレー */
+    --accent: #3498db;        /* アクセント：ブルー */
+    --danger: #e74c3c;        /* 赤 */
+    --success: #00b894;       /* 緑 */
+    --warning: #f1c40f;       /* 黄 */
+    --bg-body: #f3f5f7;       /* 背景：淡いグレー */
+    --bg-card: #ffffff;
+    --text-main: #2d3436;
+    --text-sub: #636e72;
+    --border-color: #dfe6e9;
+    
+    /* 影 */
+    --shadow-soft: 0 4px 20px rgba(0,0,0,0.05);
+    --shadow-hover: 0 15px 35px rgba(0,0,0,0.1);
+}
+
+body {
+    body { background-color: #c3d2ba !important; font-family: "Noto Sans JP", sans-serif; }
+    color: var(--text-main);
+    padding-bottom: 80px;
+    line-height: 1.6;
+}
+
+.app-screen { display: none; }
+.container-custom { max-width: 1250px; margin: 30px auto; padding: 0 20px; }
+.truncated { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; display: block; }
+.pointer { cursor: pointer; }
+
+/* =========================================
+   1. 共通コンポーネント (ボタン・フォーム)
+   ========================================= */
+.btn {
+    border-radius: 6px;
+    font-weight: 600;
+    padding: 8px 20px;
+    transition: all 0.2s;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+.btn:hover { transform: translateY(-1px); box-shadow: 0 4px 8px rgba(0,0,0,0.15); }
+.btn:active { transform: translateY(0); }
+
+.btn-primary { background-color: var(--primary); border-color: var(--primary); }
+.btn-success { background-color: var(--success); border-color: var(--success); }
+.btn-outline-secondary { border-color: #b2bec3; color: var(--text-sub); background: white; }
+.btn-outline-secondary:hover { background-color: #dfe6e9; color: var(--text-main); }
+
+.form-label-top {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-sub);
+    margin-bottom: 3px !important;
+    display: block;
+}
+.form-control, .form-select {
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-size: 0.9rem;
+    background-color: #fff;
+    transition: 0.2s;
+}
+.form-control:focus, .form-select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.15);
+}
+.bg-readonly { background-color: #f1f2f6; font-weight: 600; color: var(--text-main); }
+
+/* =========================================
+   2. メニュー画面 & カレンダー
+   ========================================= */
+.menu-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 25px; margin-top: 40px; }
+.menu-card {
+    background: white;
+    padding: 40px 20px;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: var(--shadow-soft);
+    cursor: pointer;
+    border: 1px solid rgba(0,0,0,0.02);
+    color: var(--primary);
+    font-weight: bold;
+    transition: all 0.3s;
+}
+.menu-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-hover); color: var(--accent); border-color: var(--accent); }
+
+/* カレンダー (以前のコードから復元) */
+#calendarGrid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+    margin-top: 10px;
+}
+.calendar-cell {
+    background: white;
+    min-height: 80px;
+    padding: 5px;
+    border: 1px solid #eee;
+    border-radius: 4px;
+    font-size: 0.8rem;
+}
+.calendar-header {
+    text-align: center;
+    font-weight: bold;
+    padding: 5px;
+    background: #f8f9fa;
+    border-radius: 4px;
+}
+
+/* =========================================
+   3. ダッシュボード (注文検索)
+   ========================================= */
+#orderTable { width: 100%; border-collapse: separate; border-spacing: 0; }
+#orderTable thead th {
+    background-color: #f8f9fa;
+    border-bottom: 2px solid var(--border-color);
+    padding: 12px;
+    font-size: 0.85rem;
+    color: var(--text-sub);
+}
+#orderTable tbody td {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+    vertical-align: middle;
+    font-size: 0.9rem;
+    background: white;
+}
+#orderTable tbody tr:hover td { background-color: #f1f8ff; }
+
+/* =========================================
+   4. 入力フォーム (ヘッダー & カード)
+   ========================================= */
+.top-bar { background: transparent; padding: 10px 0; }
+.page-title { font-size: 1.5rem; font-weight: 800; margin: 0 15px; color: #222; }
+.order-no-badge { background: #e9ecef; padding: 4px 10px; border-radius: 4px; font-weight: bold; font-size: 0.8rem; color: #555; border: 1px solid #ced4da; }
+
+.order-info-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px 25px;
+    box-shadow: var(--shadow-soft);
+    margin-bottom: 25px;
+    border: 1px solid #fff;
+    position: relative;
+}
+/* 左端のアクセントバー */
+.order-info-card::before {
+    content: ""; position: absolute; top: 15px; bottom: 15px; left: 0; width: 4px;
+    background: var(--primary); border-radius: 0 4px 4px 0;
+}
+
+/* =========================================
+   5. タブ & コンテンツ
+   ========================================= */
+.nav-tabs { border-bottom: 2px solid var(--border-color); padding-left: 15px; margin-bottom: 0; gap: 5px; }
+.nav-tabs .nav-link {
+    border: 1px solid transparent;
+    background: #e2e6ea;
+    color: var(--text-sub);
+    font-weight: 600;
+    border-radius: 8px 8px 0 0;
+    padding: 10px 25px;
+    transition: all 0.2s;
+    margin-right: 0;
+}
+.nav-tabs .nav-link:hover { background: #d1d5db; color: var(--primary); }
+.nav-tabs .nav-link.active {
+    background: #fff;
+    color: var(--accent);
+    font-weight: bold;
+    border-color: var(--border-color) var(--border-color) #fff;
+    border-width: 1px 1px 2px 1px;
+    border-top: 3px solid var(--accent);
+    position: relative;
+    top: 2px;
+    box-shadow: 0 -3px 6px rgba(0,0,0,0.05);
+}
+.nav-tabs .nav-link i { margin-right: 8px; }
+
+/* =========================================
+   6. 商品リスト (2列レイアウト)
+   ========================================= */
+.product-section-header { margin-bottom: 15px; }
+.section-title { font-weight: 800; font-size: 1.1rem; color: #444; }
+.add-link {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 0.9rem;
+    cursor: pointer;
+    border: 1px dashed var(--accent);
+    padding: 5px 15px;
+    border-radius: 20px;
+    transition: 0.2s;
+}
+.add-link:hover { background: #f0f7ff; }
+
+/* 2カラムグリッド */
+#productListDisplay {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    align-content: start;
+}
+@media (max-width: 992px) { #productListDisplay { grid-template-columns: 1fr; } }
+
+/* 商品カードスタイル */
+.product-item {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 12px 15px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+    transition: all 0.2s;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    position: relative;
+}
+.product-item:hover { box-shadow: 0 5px 15px rgba(0,0,0,0.08); border-color: #b0c4de; transform: translateY(-2px); }
+
+/* 行スタイル */
+.prod-header-row { display: flex; align-items: center; gap: 10px; border-bottom: 1px dashed #eee; padding-bottom: 8px; margin-bottom: 4px; }
+.prod-no-badge { background: var(--primary); color: #fff; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
+.prod-code { font-size: 0.8rem; color: #888; font-weight: 600; }
+.prod-name { font-size: 0.95rem; font-weight: bold; color: #333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; }
+
+.prod-detail-row { display: flex; align-items: center; justify-content: space-between; font-size: 0.9rem; }
+.prod-color-box { display: flex; align-items: center; gap: 5px; font-weight: bold; color: #333; background: #f8f9fa; padding: 3px 8px; border-radius: 4px; border: 1px solid #eee; }
+.color-dot { width: 10px; height: 10px; border-radius: 50%; background: #555; border: 1px solid rgba(0,0,0,0.1); }
+
+.prod-size-list { display: flex; gap: 4px; flex-wrap: wrap; flex: 1; margin-left: 10px; }
+.size-tag { background: #fff; color: #666; padding: 1px 6px; border-radius: 4px; font-size: 0.75rem; border: 1px solid #ddd; }
+
+.prod-total-box { text-align: right; margin-left: 10px; line-height: 1; }
+.prod-total-label { font-size: 0.65rem; color: #999; display: block; }
+.prod-total-val { font-size: 1.1rem; font-weight: 800; color: var(--accent); }
+
+.btn-del-icon { position: absolute; top: 10px; right: 10px; color: #ccc; cursor: pointer; transition: 0.2s; }
+.btn-del-icon:hover { color: var(--danger); }
+
+/* =========================================
+   7. PDFプレビュー (A4横向き対応)
+   ========================================= */
+#pdfViewer {
+    width: 100%;
+    /* A4横向き比率を強制 (297:210) */
+    aspect-ratio: 297 / 210;
+    height: auto !important; /* 高さは幅に合わせて自動 */
+    
+    background-color: #525659;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    overflow: hidden;
+    position: relative;
+}
+#pdfViewer iframe { width: 100%; height: 100%; border: none; display: block; background: #fff; }
+
+/* =========================================
+   8. モーダル & サイドバー
+   ========================================= */
+.modal-content { border: none; border-radius: 12px; box-shadow: var(--shadow-hover); }
+.modal-header { background-color: var(--primary); color: white; border-radius: 12px 12px 0 0; }
+.btn-close-white { filter: invert(1) grayscale(100%) brightness(200%); }
+
+/* サイドバー (Offcanvas) */
+#procOffcanvas { display: flex; flex-direction: column; height: 100vh; box-shadow: -10px 0 40px rgba(0,0,0,0.1); }
+#procOffcanvas .offcanvas-header { padding: 10px 15px; flex-shrink: 0; background: var(--primary); color: white; }
+#procOffcanvas .offcanvas-body { padding: 10px 15px; flex-grow: 1; overflow-y: auto; background-color: #f8f9fa; }
+#procOffcanvas .offcanvas-footer { padding: 10px 15px; background: #fff; border-top: 1px solid #dee2e6; flex-shrink: 0; position: relative; z-index: 1060; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); }
+
+/* サイドバー内の要素（凝縮スタイル） */
+.sidebar-card { padding: 10px 12px !important; margin-bottom: 10px !important; background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.03) !important; border: 1px solid #edf2f7; }
+.sidebar-label { font-size: 0.75rem !important; margin-bottom: 1px !important; color: var(--text-sub); font-weight: 700; display: block; }
+.sidebar-input { font-size: 0.85rem !important; padding: 4px 8px !important; height: auto !important; border-radius: 4px; border: 1px solid #ced4da; }
+.sidebar-map-row { padding: 4px 8px !important; margin-bottom: 4px !important; background: #fff; border: 1px solid #edf2f7 !important; }
+/* ダッシュボード用スタイル */
+.icon-status {
+    color: #2ecc71; /* 緑のチェック */
+    margin-right: 8px;
+}
+.icon-mail {
+    color: #3498db; /* 青い紙飛行機 */
+    margin-right: 8px;
+}
+.icon-flash {
+    color: #f1c40f; /* 黄色の雷 */
+}
+.icon-lock {
+    color: #34495e; /* 黒い鍵 */
+}
+.table-subject {
+    color: #0d6efd;
+    font-weight: bold;
+    cursor: pointer;
+}
+.table-subtext {
+    font-size: 0.8rem;
+    color: #7f8c8d;
+}
+.doc-number {
+    font-family: monospace;
+    color: #555;
+    font-weight: bold;
+}
+/* スクロールバーを少し細く */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+/* =========================================
+   9. モード別背景色 (追加)
+   ========================================= */
+/* 管理者モード（薄い青） */
+body.admin-mode { background-color: #dbeafe !important; }
+
+/* 追加発注モード（薄いオレンジ） */
+body.add-mode { background-color: #fff7e6 !important; }

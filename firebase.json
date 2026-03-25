@@ -1,0 +1,24 @@
+{
+  "hosting": {
+    "site": "msk579-3d7a9",
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**",
+      "index.html"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/zo_system_private.html.html"
+      }
+    ]
+  },
+  "firestore": {
+    "rules": "firestore.rules"
+  },
+  "functions": {
+    "source": "functions"
+  }
+}
