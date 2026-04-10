@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ZO SYSTEM</title>
+    <title>ZO SYSTEM [V26.03.28.9]</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
@@ -1290,20 +1290,50 @@
         <div class="offcanvas-body bg-light">
             <div class="card p-3 shadow-sm border-0">
                 <div class="row g-3">
+                    <div id="sbFullSubFilterArea" style="display:none;" class="col-12 mt-0">
+                         <div class="row g-2">
+                             <div class="col-6">
+                                 <label class="form-label-top small">商品カテゴリ</label>
+                                 <select id="fs_category" class="form-select form-select-sm" onchange="updateFullSubFilters()"></select>
+                             </div>
+                             <div class="col-6" id="fs_sleeve_col">
+                                 <label class="form-label-top small">袖</label>
+                                 <select id="fs_sleeve" class="form-select form-select-sm" onchange="updateFullSubFilters()"></select>
+                             </div>
+                             <div class="col-6" id="fs_collar_col">
+                                 <label class="form-label-top small">衿</label>
+                                 <select id="fs_collar" class="form-select form-select-sm" onchange="updateFullSubFilters()"></select>
+                             </div>
+                             <div class="col-6" id="fs_base_col">
+                                 <label class="form-label-top small">ベース</label>
+                                 <select id="fs_base" class="form-select form-select-sm" onchange="updateFullSubFilters()"></select>
+                             </div>
+                             <div class="col-6" id="fs_model_col">
+                                 <label class="form-label-top small">モデル</label>
+                                 <select id="fs_model" class="form-select form-select-sm" onchange="updateFullSubFilters()"></select>
+                             </div>
+                             <div class="col-12" id="fs_option_col">
+                                 <label class="form-label-top small">オプション</label>
+                                 <select id="fs_option" class="form-select form-select-sm" onchange="updateFullSubFilters()"></select>
+                             </div>
+                         </div>
+                         <hr class="my-2">
+                    </div>
+                    <!-- サザンラガー商品選択ドロップダウンは不要（品番入力のサジェストに統合） -->
                     <div class="col-12" id="sbNameRow">
-                        <label class="form-label-top">商品名</label>
+                        <label class="form-label-top">商品名 (マスタ検索)</label>
                         <input type="text" id="sb_name" class="form-control form-control-sm" list="itemSuggestionList"
-                                placeholder="商品名を入力..." oninput="autoFillPatternNo()">
+                                placeholder="商品名または品番を入力..." oninput="autoFillPatternNo()" onblur="autoFillPatternNo()">
                         <datalist id="itemSuggestionList"></datalist>
                     </div>
-                    <div class="col-12" id="sbProductNameRow" style="display:none;">
+                    <div class="col-12" id="sbProductNameRow">
                         <label class="form-label-top">商品名</label>
                         <input type="text" id="sb_product_name" class="form-control form-control-sm" placeholder="商品名を入力...">
                     </div>
                     <div class="col-12" id="sbPatternRow">
                         <label class="form-label-top">品番</label>
                         <div class="input-group input-group-sm">
-                            <input type="text" id="sb_pattern" class="form-control" placeholder="品番を入力..." oninput="onSbPatternInput()">
+                            <input type="text" id="sb_pattern" class="form-control" placeholder="品番を入力..." oninput="autoFillPatternNo()" onblur="autoFillPatternNo()" list="itemSuggestionList">
                             <button class="btn btn-outline-secondary" type="button" id="sb_search_net_btn" onclick="openNetSearch()" title="ネットで検索" style="display:none;">
                                 <i class="fas fa-search me-1"></i><span style="font-size:0.7rem">ネット検索</span>
                             </button>
@@ -1342,6 +1372,7 @@
                         </div>
                     </div>
                     <input type="hidden" id="sb_edit_index" value="">
+                    <input type="hidden" id="sb_is_carry_in" value="">
                     <div class="col-12"><label class="form-label-top mb-1">サイズ・数量入力</label>
                         <div class="sb-grid-container" id="sbGridContainer"
                             style="display:grid;grid-template-columns:repeat(6,1fr);gap:4px;text-align:center">
@@ -1448,6 +1479,13 @@
                                     style="font-size:0.9rem">0</div>
                             </div>
                         </div>
+                    </div>
+                    <div class="col-12 mt-2" id="sbBulkInputArea" style="display:none;">
+                        <label class="form-label-top small fw-bold text-success"><i class="fas fa-file-import me-1"></i>一括入力 (サイズ/番号/名前)</label>
+                        <textarea id="sb_bulk_paste" class="form-control small" rows="5" 
+                            style="font-family:monospace;font-size:0.75rem;"
+                            placeholder="サイズ[Tab]番号[Tab]名前 を貼り付け..."></textarea>
+                        <button class="btn btn-outline-success btn-sm w-100 mt-1 fw-bold" onclick="applyBulkPasteToSidebar()">反映</button>
                     </div>
                     <div class="col-12 mt-2">
                         <label class="form-label-top small fw-bold">下書きデータ (コピー用)</label>
@@ -1968,6 +2006,49 @@
                     "JPN_HP_203_B": { no: "JPN_HP_203_B", name: "ハーフパンツ　ポケット付_番号有", price: 3500 },
                     "JPN_HP_203_NB": { no: "JPN_HP_203_NB", name: "ハーフパンツ　ポケット付_ネーム番号有", price: 3600 }
                 };
+                const FULL_SUB_PRODUCT_MASTER = [
+                    { category: '野球ユニフォーム', sleeve: 'ラグラン', collar: '', base: 'レギュラー', model: 'フルオープン', option: '', sku: 'ZTWY_RO' },
+                    { category: '野球ユニフォーム', sleeve: 'ラグラン', collar: '', base: 'レギュラー', model: 'フルオープン', option: '袖丈+7cm', sku: 'ZTWY_RO7' },
+                    { category: '野球ユニフォーム', sleeve: 'ラグラン', collar: '', base: 'レギュラー', model: 'フルオープン', option: '衿付き', sku: 'ZTWY_RO_C' },
+                    { category: '野球ユニフォーム', sleeve: 'ラグラン', collar: '', base: 'レギュラー', model: 'フルオープン', option: '衿付き_袖丈+7cm', sku: 'ZTWY_RO7_C' },
+                    { category: '野球ユニフォーム', sleeve: 'ラグラン', collar: '', base: 'ルーズ', model: 'フルオープン', option: '', sku: 'ZTWY_ROL' },
+                    { category: '野球ユニフォーム', sleeve: 'ラグラン', collar: '', base: 'ルーズ', model: 'フルオープン', option: '衿付き', sku: 'ZTWY_ROL_C' },
+                    { category: '野球ユニフォーム', sleeve: 'ラグラン', collar: '', base: 'レギュラー', model: '2ボタン', option: '', sku: 'ZTWY_R2B' },
+                    { category: '野球ユニフォーム', sleeve: 'ラグラン', collar: '', base: 'レギュラー', model: '2ボタン', option: '袖丈+7cm', sku: 'ZTWY_R2B+7' },
+                    { category: '野球ユニフォーム', sleeve: 'ラグラン', collar: '', base: 'レギュラー', model: '2ボタン', option: '衿付き', sku: 'ZTWY_R2B_C' },
+                    { category: '野球ユニフォーム', sleeve: 'ラグラン', collar: '', base: 'レギュラー', model: '2ボタン', option: '衿付き_袖丈+7cm', sku: 'ZTWY_R2B+7_C' },
+                    { category: '野球ユニフォーム', sleeve: 'ラグラン', collar: '', base: 'ルーズ', model: '2ボタン', option: '', sku: 'ZTWY_R2BL' },
+                    { category: '野球ユニフォーム', sleeve: 'ラグラン', collar: '', base: 'ルーズ', model: '2ボタン', option: '衿付き', sku: 'ZTWY_R2BL_C' },
+                    { category: '野球ユニフォーム', sleeve: 'ボックス', collar: '', base: 'レギュラー', model: 'フルオープン', option: '', sku: 'ZTWY_BO' },
+                    { category: '野球ユニフォーム', sleeve: 'ボックス', collar: '', base: 'レギュラー', model: 'フルオープン', option: '袖丈+7cm', sku: 'ZTWY_BO7' },
+                    { category: '野球ユニフォーム', sleeve: 'ボックス', collar: '', base: 'レギュラー', model: 'フルオープン', option: '衿付き', sku: 'ZTWY_BO_C' },
+                    { category: '野球ユニフォーム', sleeve: 'ボックス', collar: '', base: 'レギュラー', model: 'フルオープン', option: '衿付き_袖丈+7cm', sku: 'ZTWY_BO7_C' },
+                    { category: '野球ユニフォーム', sleeve: 'ボックス', collar: '', base: 'ルーズ', model: 'フルオープン', option: '', sku: 'ZTWY_BOL' },
+                    { category: '野球ユニフォーム', sleeve: 'ボックス', collar: '', base: 'ルーズ', model: 'フルオープン', option: '衿付き', sku: 'ZTWY_BOL_C' },
+                    { category: '野球ユニフォーム', sleeve: 'ボックス', collar: '', base: 'レギュラー', model: '2ボタン', option: '', sku: 'ZTWY_B2' },
+                    { category: '野球ユニフォーム', sleeve: 'ボックス', collar: '', base: 'レギュラー', model: '2ボタン', option: '袖丈+7cm', sku: 'ZTWY_B27_C' },
+                    { category: '野球ユニフォーム', sleeve: 'ボックス', collar: '', base: 'レギュラー', model: '2ボタン', option: '衿付き', sku: 'ZTWY_B2_C' },
+                    { category: '野球ユニフォーム', sleeve: 'ボックス', collar: '', base: 'レギュラー', model: '2ボタン', option: '衿付き_袖丈+7cm', sku: 'ZTWY_B27_C' },
+                    { category: '野球ユニフォーム', sleeve: 'ボックス', collar: '', base: 'ルーズ', model: '2ボタン', option: '', sku: 'ZTWY_B2L' },
+                    { category: '野球ユニフォーム', sleeve: 'ボックス', collar: '', base: 'ルーズ', model: '2ボタン', option: '衿付き', sku: 'ZTWY_B2L_C' },
+                    { category: 'サッカーシャツ', sleeve: 'ラグラン', collar: '丸首', sku: 'ZTW_SR-M' },
+                    { category: 'サッカーシャツ', sleeve: 'ラグラン', collar: 'V首', sku: 'ZTW_SR-V' },
+                    { category: 'サッカーシャツ', sleeve: 'ラグラン', collar: '丸首2重', sku: 'ZTW_SR-M2' },
+                    { category: 'サッカーシャツ', sleeve: 'ボックス', collar: '丸首', sku: 'ZTW_SB-M' },
+                    { category: 'サッカーシャツ', sleeve: 'ボックス', collar: 'V首', sku: 'ZTW_SB-V' },
+                    { category: 'サッカーシャツ', sleeve: 'ボックス', collar: '丸首2重', sku: 'ZTW_SB-M2' },
+                    { category: 'サッカーパンツ', sku: 'ZTW_SO_P' },
+                    { category: 'バスケットシャツ', collar: 'V首', sku: 'ZTW_BBS_V' },
+                    { category: 'バスケットパンツ', sku: 'ZTW_BB_P' },
+                    { category: '半袖丸Tシャツ', sleeve: 'ラグラン', collar: '丸首', sku: 'ZTW_TR_M' },
+                    { category: '半袖丸Tシャツ', sleeve: 'ラグラン', collar: 'V首', sku: 'ZTW_TR_V' },
+                    { category: '長袖丸Tシャツ', sleeve: 'ラグラン', collar: '丸首', sku: 'ZTW_TRL_M' },
+                    { category: '長袖丸Tシャツ', sleeve: 'ラグラン', collar: 'V首', sku: 'ZTW_TRL_V' },
+                    { category: '半袖丸Tシャツ', sleeve: 'ボックス', collar: '丸首', sku: 'ZTW_TB_M' },
+                    { category: '半袖丸Tシャツ', sleeve: 'ボックス', collar: 'V首', sku: 'ZTW_TB_V' },
+                    { category: '長袖丸Tシャツ', sleeve: 'ボックス', collar: '丸首', sku: 'ZTW_TBL_M' },
+                    { category: '長袖丸Tシャツ', sleeve: 'ボックス', collar: 'V首', sku: 'ZTW_TBL_V' }
+                ];
 
                 const FABRIC_MASTER = [
                     "ZO-SC001　刺洞布（薄）",
@@ -2038,14 +2119,30 @@
                     const btnCarry = document.getElementById('btn-prod-carry');
                     if (fullSub) {
                         if (h5) h5.innerHTML = 'フル昇華指示書 No.<span id="orderId" class="text-primary"></span>';
-                        if (btnProc) btnProc.style.display = 'none';
+                        if (btnProc) btnProc.style.display = 'none'; // マーク指示不要
                         if (cardProc) cardProc.style.display = 'none';
-                        if (btnProd) {
-                            btnProd.innerHTML = '<i class="fas fa-tshirt me-1"></i> アイテム登録';
-                            btnProd.setAttribute('onclick', 'openItemInputSidebar(false)');
-                            btnProd.className = "btn btn-primary fw-bold flex-grow-1 py-2";
+                        if (btnProd) btnProd.style.display = 'none'; // ZO商品は不要
+                        
+                        // メイン画面の一括入力ボタンは非表示（サイドバー内へ移動）
+                        const btnBulk = document.querySelector('button[onclick*="excelImportSidebar"]');
+                        if (btnBulk) btnBulk.style.display = 'none';
+
+                        if (btnCarry) {
+                            btnCarry.style.display = 'inline-block';
+                            btnCarry.className = "btn btn-primary fw-bold flex-grow-1 py-2";
+                            btnCarry.innerHTML = '<i class="fas fa-edit me-1"></i> 商品指示';
+                            btnCarry.setAttribute('onclick', 'openItemInputSidebar(false)');
                         }
-                        if (btnCarry) btnCarry.style.display = 'none';
+
+                        // サイドバー項目をフル昇華用に調整
+                        const sbNameRow = document.getElementById('sbNameRow');
+                        const sbProdRow = document.getElementById('sbProductNameRow');
+                        const sbNetBtn  = document.getElementById('sb_search_net_btn');
+                        const sbUrlRow  = document.getElementById('sbItemUrlRow');
+                        if (sbNameRow) sbNameRow.style.display = 'none'; // マスタ検索不要
+                        if (sbProdRow) sbProdRow.style.display = 'block'; // 手動品名入力
+                        if (sbNetBtn)  sbNetBtn.style.display  = 'none';  // ネット検索不要
+                        if (sbUrlRow)  sbUrlRow.style.display  = 'none';  // URL不要
 
                         if (ss) { ss.innerHTML = `<option value="">競技選択</option><option value="野球">野球</option><option value="サッカー">サッカー</option><option value="バスケ">バスケ</option><option value="バレー">バレー</option><option value="フル昇華その他">フル昇華その他</option>`; ss.onchange = null }
                         if (cs) { cs.innerHTML = `<option value="">カテゴリ選択</option><option value="昇華シャツ">昇華シャツ</option><option value="昇華パンツ">昇華パンツ</option><option value="昇華リバーシブル">昇華リバーシブル</option><option value="セットアップ">セットアップ</option>` }
@@ -2066,15 +2163,27 @@
                         if (btnProc) btnProc.style.display = 'inline-block';
                         if (cardProc) cardProc.style.display = 'block';
                         if (btnProd) {
+                            btnProd.style.display = 'inline-block';
                             btnProd.innerHTML = '<i class="fas fa-store me-1"></i> ZO発注商品';
                             btnProd.setAttribute('onclick', 'openSearchModal()');
                             btnProd.className = "btn btn-primary fw-bold flex-grow-1 py-2";
                         }
                         if (btnCarry) {
                             btnCarry.style.display = 'inline-block';
+                            btnCarry.innerHTML = '<i class="fas fa-box-open me-1"></i> 持ち込み商品';
                             btnCarry.setAttribute('onclick', 'openItemInputSidebar(true)');
-                            btnCarry.classList.add('btn-pink');
+                            btnCarry.className = "btn btn-success fw-bold flex-grow-1 py-2 btn-pink";
                         }
+                        // 標準モードでは非表示にしたものを戻す
+                        const sbNameRow = document.getElementById('sbNameRow');
+                        const sbNetBtn  = document.getElementById('sb_search_net_btn');
+                        const sbUrlRow  = document.getElementById('sbItemUrlRow');
+                        if (sbNameRow) sbNameRow.style.display = 'block';
+                        if (sbNetBtn)  sbNetBtn.style.display  = 'inline-block';
+                        if (sbUrlRow)  sbUrlRow.style.display  = 'block';
+
+                        const btnBulk = document.querySelector('button[onclick*="excelImportSidebar"]');
+                        if (btnBulk) btnBulk.style.display = 'inline-block';
 
                         if (typeof initSportDropdown === "function") initSportDropdown();
                         if (ss) ss.onchange = typeof updateProductList === "function" ? updateProductList : null;
@@ -2215,7 +2324,7 @@
 
                     let res = { no: cleanSku, name: cleanSku, price: 0 };
                     const u = window.currentUser;
-                    const isSL = u && (u.isAdmin || (u.customer && u.customer.includes("サザンラガー")));
+                    const isSL = !!(u && (u.isAdmin || (u.customer && /サザン|Southern/i.test(u.customer)) || (u.id && /サザン|Southern/i.test(u.id))));
 
                     // 品番（キー）で検索 (Southern Lager優先)
                     if (isSL && SOUTHERN_LAGER_MASTER[cleanSku]) {
@@ -3136,7 +3245,6 @@
                     updateRightPanel();
                     alert(`${importedCount}件、リストに反映しました。`);
                 }
-
                 function openProcSidebar() {
                     try {
                         const el = document.getElementById('procOffcanvas');
@@ -3271,6 +3379,36 @@
                 function openItemInputSidebar(forCarryIn = false) {
                     const el = document.getElementById('itemInputSidebar');
                     if (!el) return;
+                    
+                    const carryInField = document.getElementById('sb_is_carry_in');
+                    if (carryInField) carryInField.value = forCarryIn ? "1" : "0";
+
+                    const sbTitle = el.querySelector('.offcanvas-title');
+                    const u = window.currentUser || {};
+                    const headerCust = (document.getElementById('header_customer') ? document.getElementById('header_customer').value : "") || "";
+                    // サザンラガー判定は入力されている顧客名で判断（Adminでも他顧客ならSL以外として振る舞う）
+                    const isSL = !!(/サザン|Southern/i.test(headerCust) || (u.customer && /サザン|Southern/i.test(u.customer)) || (u.id && /サザン|Southern/i.test(u.id)));
+
+                    if (sbTitle) {
+                        if (forCarryIn) sbTitle.innerText = "持ち込み商品登録";
+                        else if (isFullSubMode) sbTitle.innerText = "商品指示登録";
+                        else sbTitle.innerText = "アイテム入力";
+                    }
+
+                    // 一括入力エリアの表示制御
+                    const bulkArea = document.getElementById('sbBulkInputArea');
+                    if (bulkArea) bulkArea.style.display = (isFullSubMode && !isSL && !forCarryIn) ? 'block' : 'none';
+                    if (isFullSubMode) {
+                        const bulkText = document.getElementById('sb_bulk_paste');
+                        if (bulkText) bulkText.value = "";
+                    }
+
+                    if (isFullSubMode && !isSL) {
+                        initFullSubFilters();
+                    } else {
+                        const area = document.getElementById('sbFullSubFilterArea');
+                        if (area) area.style.display = 'none';
+                    }
 
                     // 加工内容が開いていれば閉じる
                     const procNode = document.getElementById('procOffcanvas');
@@ -3287,8 +3425,7 @@
                         el.classList.add('sidebar-blue'); // Default blue
                     }
 
-                    const u = window.currentUser || {};
-                    const isSL = u.isAdmin || (u.customer && u.customer.includes("サザンラガー"));
+                    // isSL logic moved to top
 
                     document.getElementById('sb_name').value = "";
                     document.getElementById('sb_name').readOnly = forCarryIn ? true : false;
@@ -3304,26 +3441,27 @@
 
                     let useFreeInput = forCarryIn;
                     const sbNameRow = document.getElementById('sbNameRow');
-                    if (sbNameRow) sbNameRow.style.display = useFreeInput ? 'none' : 'block';
+                    // フル昇華モード or 持ち込み時はマスタ検索(ZO商品検索)を隠す
+                    if (sbNameRow) sbNameRow.style.display = (useFreeInput || isFullSubMode) ? 'none' : 'block';
                     const sbProductNameRow = document.getElementById('sbProductNameRow');
-                    if (sbProductNameRow) sbProductNameRow.style.display = useFreeInput ? 'block' : 'none';
+                    // 名称確認・手入力のため常に表示する
+                    if (sbProductNameRow) sbProductNameRow.style.display = (useFreeInput || isFullSubMode) ? 'block' : 'none';
 
                     const sbPattern = document.getElementById('sb_pattern');
                     const netSearchBtn = document.getElementById('sb_search_net_btn');
                     const sbUrlRow = document.getElementById('sbItemUrlRow');
                     if (sbPattern) {
-                        const allowManualSku = forCarryIn || (isFullSubMode && !isSL);
+                        const allowManualSku = forCarryIn || isFullSubMode;
                         if (allowManualSku) {
                             sbPattern.readOnly = false;
                             sbPattern.classList.remove('bg-light');
-                            if (netSearchBtn) netSearchBtn.style.display = 'block';
-                            if (sbUrlRow) sbUrlRow.style.display = 'block';
                         } else {
                             sbPattern.readOnly = true;
                             sbPattern.classList.add('bg-light');
-                            if (netSearchBtn) netSearchBtn.style.display = 'none';
-                            if (sbUrlRow) sbUrlRow.style.display = 'none';
                         }
+                        // フル昇華モード時はネット検索とURLを隠す
+                        if (netSearchBtn) netSearchBtn.style.display = (isFullSubMode || forCarryIn) ? 'none' : 'block';
+                        if (sbUrlRow) sbUrlRow.style.display = (isFullSubMode || forCarryIn) ? 'none' : 'block';
                     }
 
                     const fabrics = isSL ? [...SOUTHERN_LAGER_FABRICS, ...FABRIC_MASTER] : FABRIC_MASTER;
@@ -3333,23 +3471,237 @@
                     const sbFabricRow = document.getElementById('sbFabricRow');
                     if (sbFabricRow) sbFabricRow.style.display = (isFullSubMode || (forCarryIn === false && !isSL)) ? 'block' : 'none';
 
+                    // 候補リストを構築
+                    const slList = document.getElementById('itemSuggestionList');
+                    if (slList) {
+                        slList.innerHTML = "";
+                        if (isSL) {
+                            Object.keys(SOUTHERN_LAGER_MASTER).forEach(sku => {
+                                const item = SOUTHERN_LAGER_MASTER[sku];
+                                const opt = document.createElement('option');
+                                opt.value = `${item.no} / ${item.name}`;
+                                slList.appendChild(opt);
+                            });
+                        } else if (isFullSubMode) {
+                            // サザンラガー以外のフル昇華用候補リスト (一般マスタから「昇華」に関係するもののみ抽出)
+                            if (itemMasterData && itemMasterData.length > 0) {
+                                itemMasterData.forEach(item => {
+                                    const isSub = (item.商品カテゴリ && item.商品カテゴリ.includes("昇華")) || (item.商品名 && item.商品名.includes("昇華"));
+                                    if (isSub) {
+                                        const opt = document.createElement('option');
+                                        opt.value = `${item.品番} / ${item.商品名}`;
+                                        slList.appendChild(opt);
+                                    }
+                                });
+                            }
+                            // デフォルト品も追加
+                            ["野球ユニフォーム","サッカーシャツ","サッカーパンツ","バスケットシャツ","バスケットパンツ","半袖丸Tシャツ","長袖丸Tシャツ","半袖VTシャツ","長袖VTシャツ"].forEach(d => {
+                                const opt = document.createElement('option');
+                                opt.value = d;
+                                slList.appendChild(opt);
+                            });
+                        }
+                    }
+
                     let instance = bootstrap.Offcanvas.getInstance(el);
                     if (!instance) instance = new bootstrap.Offcanvas(el);
                     instance.show();
                 }
 
-                function onSbPatternInput() {
-                    const pattern = document.getElementById('sb_pattern').value.trim();
-                    const nameInput = document.getElementById('sb_product_name'); // 持ち降ろし用
-                    
-                    // まず商品マスタを検索
-                    const resolved = resolveProductInfo(pattern);
-                    if (resolved && resolved.price > 0 && nameInput) {
-                        nameInput.value = resolved.name;
-                        nameInput.classList.add('bg-success-light');
-                        setTimeout(() => nameInput.classList.remove('bg-success-light'), 1000);
+                function initFullSubFilters() {
+                    const area = document.getElementById('sbFullSubFilterArea');
+                    if (!area) return;
+                    area.style.display = 'block';
+
+                    const catSel = document.getElementById('fs_category');
+                    catSel.innerHTML = '<option value="">選択してください</option>';
+                    const cats = [...new Set(FULL_SUB_PRODUCT_MASTER.map(i => i.category))];
+                    if (!cats.includes("バレー")) cats.push("バレー"); // ユーザー希望の競技を追加
+                    cats.forEach(c => catSel.appendChild(new Option(c, c)));
+
+                    // 他をリセット
+                    ['fs_sleeve', 'fs_collar', 'fs_base', 'fs_model', 'fs_option'].forEach(id => {
+                        const s = document.getElementById(id);
+                        if (s) s.innerHTML = '<option value="">-</option>';
+                        const col = document.getElementById(id + '_col');
+                        if (col) col.style.display = 'none';
+                    });
+                }
+
+                function updateFullSubFilters() {
+                    const cat = document.getElementById('fs_category').value;
+                    const sleeve = document.getElementById('fs_sleeve').value;
+                    const collar = document.getElementById('fs_collar').value;
+                    const base = document.getElementById('fs_base').value;
+                    const model = document.getElementById('fs_model').value;
+                    const option = document.getElementById('fs_option').value;
+
+                    if (!cat) {
+                        initFullSubFilters();
+                        return;
                     }
+
+                    // フィルタリング
+                    let filtered = FULL_SUB_PRODUCT_MASTER.filter(i => i.category === cat);
+                    
+                    const updateSelect = (id, key) => {
+                        const sel = document.getElementById(id);
+                        const col = document.getElementById(id + '_col');
+                        // 空文字も選択肢として含める（「なし」として扱う）
+                        const vals = [...new Set(filtered.map(i => i[key]).filter(v => v !== undefined && v !== null))];
+                        
+                        if (vals.length > 1 || (vals.length === 1 && vals[0] !== "")) {
+                            const currentVal = sel.value;
+                            sel.innerHTML = '<option value="">選択してください</option>';
+                            vals.forEach(v => {
+                                const label = (v === "" || v === undefined) ? "なし" : v;
+                                sel.appendChild(new Option(label, v));
+                            });
+                            if (vals.includes(currentVal)) sel.value = currentVal;
+                            col.style.display = 'block';
+                            // 選択肢が「なし」以外に1つだけなら自動選択
+                            if (vals.length === 1 && !sel.value && vals[0] !== "") {
+                                sel.value = vals[0];
+                            }
+                            return true;
+                        } else {
+                            sel.innerHTML = '<option value="">-</option>';
+                            col.style.display = 'none';
+                            return false;
+                        }
+                    };
+
+                    updateSelect('fs_sleeve', 'sleeve');
+                    if (sleeve) filtered = filtered.filter(i => i.sleeve === sleeve);
+                    
+                    updateSelect('fs_collar', 'collar');
+                    if (collar) filtered = filtered.filter(i => i.collar === collar);
+                    
+                    updateSelect('fs_base', 'base');
+                    if (base) filtered = filtered.filter(i => i.base === base);
+                    
+                    updateSelect('fs_model', 'model');
+                    if (model) filtered = filtered.filter(i => i.model === model);
+                    
+                    updateSelect('fs_option', 'option');
+                    if (option) filtered = filtered.filter(i => i.option === option);
+
+                    if (filtered.length === 1) {
+                        const item = filtered[0];
+                        document.getElementById('sb_pattern').value = item.sku;
+                        let nameParts = [item.category, item.sleeve, item.collar, item.base, item.model, item.option].filter(x => x);
+                        document.getElementById('sb_product_name').value = nameParts.join('_');
+                    }
+                }
+
+                window.autoFillPatternNo = function() {
+                    const sbName = document.getElementById('sb_name');
+                    const sbPattern = document.getElementById('sb_pattern');
+                    const sbProdName = document.getElementById('sb_product_name');
+                    if (!sbName || !sbPattern) return;
+
+                    const input = (sbName.value.trim() || sbPattern.value.trim());
+                    if (!input) return;
+
+                    const resolved = resolveProductInfo(input);
+                    if (resolved && resolved.price > 0) {
+                        sbPattern.value = resolved.no;
+                        if(sbProdName) sbProdName.value = resolved.name;
+                        if (resolved.fabric) {
+                           const fSelect = document.getElementById('sb_fabric');
+                           if (fSelect) fSelect.value = resolved.fabric;
+                        }
+                        syncDraftData();
+                    }
+                }
+
+                function applyBulkPasteToSidebar() {
+                    const text = document.getElementById('sb_bulk_paste').value.trim();
+                    if (!text) return;
+                    const lines = text.split(/\r\n|\n/);
+                    let counts = {};
+                    let players = [];
+                    lines.forEach(l => {
+                        const c = l.split(/\t|,|\s{2,}/);
+                        if (c.length < 2) return;
+                        if (c[0].includes("サイズ") || c[0].includes("番号") || l.includes("品番")) return;
+
+                        let size = "", num = "", name = "";
+                        if (c.length >= 3) {
+                           size = c[0].trim().toUpperCase(); num = c[1].trim(); name = c[2].trim();
+                        } else {
+                           size = c[0].trim().toUpperCase(); num = c[1].trim();
+                        }
+                        if (size) {
+                           counts[size] = (counts[size] || 0) + 1;
+                           players.push({ num, name, size });
+                        }
+                    });
+
+                    // グリッドに反映
+                    const qtyInputs = document.querySelectorAll('.sb-qty');
+                    const sizeHiddens = document.querySelectorAll('.sb-size');
+                    let t = 0;
+                    qtyInputs.forEach((inp, idx) => {
+                        const s = sizeHiddens[idx].value.toUpperCase();
+                        if (counts[s]) {
+                            inp.value = counts[s];
+                            t += counts[s];
+                        } else {
+                            inp.value = "";
+                        }
+                    });
+
+                    // 合計枚数と下書きエリアの更新
+                    document.getElementById('sb-total-display').innerText = t;
+                    window._currentSidebarPlayers = players;
                     syncDraftData();
+                    alert(players.length + "名分のデータを読み込み、集計を反映しました。");
+                }
+
+                function applyBulkPasteToSidebar() {
+                    const text = document.getElementById('sb_bulk_paste').value.trim();
+                    if (!text) return;
+                    const lines = text.split(/\r\n|\n/);
+                    let counts = {};
+                    let playersOfThisItem = [];
+                    lines.forEach(l => {
+                        const c = l.split('\t');
+                        if (c.length < 2) return;
+                        if (c[0].includes("サイズ") || c[0].includes("番号")) return;
+
+                        let size = "", num = "", name = "";
+                        if (c.length >= 3) {
+                           size = c[0].trim().toUpperCase(); num = c[1].trim(); name = c[2].trim();
+                        } else {
+                           size = c[0].trim().toUpperCase(); num = c[1].trim();
+                        }
+                        if (size) {
+                           counts[size] = (counts[size] || 0) + 1;
+                           playersOfThisItem.push({ num, name, size });
+                        }
+                    });
+
+                    // グリッドに反映
+                    const qtyInputs = document.querySelectorAll('.sb-qty');
+                    const sizeHiddens = document.querySelectorAll('.sb-size');
+                    qtyInputs.forEach((inp, idx) => {
+                        const s = sizeHiddens[idx].value.toUpperCase();
+                        if (counts[s]) {
+                            inp.value = counts[s];
+                        } else {
+                            inp.value = "";
+                        }
+                    });
+
+                    // 商品登録時にplayerListへマージできるよう、一時的に保存
+                    window._currentSidebarPlayers = playersOfThisItem;
+                    syncDraftData(); // 合計枚数などの再計算
+                    alert(lines.length + "行のデータを読み込みました。数量グリッドを確認してください。");
+                }
+
+                function onSbPatternInput() {
+                    autoFillPatternNo(); // 共通化
                 }
 
                 function openNetSearch() {
@@ -3544,7 +3896,7 @@
                     const editIdx = document.getElementById('sb_edit_index').value;
 
                     const u = window.currentUser;
-                    const isSL = u && (u.isAdmin || (u.customer && u.customer.includes("サザンラガー")));
+                    const isSL = !!(u && (u.isAdmin || (u.customer && u.customer.includes("サザンラガー")) || (u.customer && u.customer.includes("サザン"))));
 
                     // resolveProductInfoを呼び出す際、入力があればそれを、なければ品番を考慮
                     let resolved = resolveProductInfo(inputVal ? inputVal : patternVal);
@@ -3580,12 +3932,33 @@
                     if (!hasQty) return alert("数量を入力してください");
 
                     const urlVal = document.getElementById('sb_item_url').value.trim();
-                    const itemData = { no: skuNo, name: n, color: "", fabric: fabricVal, quantities: qtys, price: resolved.price, url: urlVal };
+                    const carryInFlag = document.getElementById('sb_is_carry_in')?.value === "1";
+                    const itemData = { 
+                        no: skuNo, 
+                        name: n, 
+                        color: "", 
+                        fabric: fabricVal, 
+                        quantities: qtys, 
+                        price: resolved.price, 
+                        url: urlVal,
+                        contentType: isFullSubMode ? "昇華アイテム" : (carryInFlag ? "持ち込み商品" : "ZO商品")
+                    };
 
                     if (editIdx !== "") {
                         productList[parseInt(editIdx)] = itemData;
                     } else {
                         productList.push(itemData);
+                    }
+
+                    // フル昇華の一括入力データがある場合はplayerListに反映（ご指摘の「サイドバーにいれて」に対応）
+                    if (isFullSubMode && window._currentSidebarPlayers && window._currentSidebarPlayers.length > 0) {
+                        // 1つの指示書につき1つの選手リストを想定（必要に応じて追記ロジックに変更も可能）
+                        playerList = window._currentSidebarPlayers.map(p => ({
+                            num: p.num,
+                            name: p.name,
+                            info: `/${p.size}` // Infoにサイズを格納
+                        }));
+                        window._currentSidebarPlayers = []; // クリア
                     }
 
                     updateRightPanel();

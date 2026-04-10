@@ -1,1881 +1,4 @@
-<!DOCTYPE html>
-<html lang="ja">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ZO SYSTEM</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <style>
-        /* 基本設定 */
-        body {
-            background-color: #f3f5f7 !important;
-            font-family: "Noto Sans JP", sans-serif;
-            margin: 0;
-            padding: 0;
-        }
-
-        body.admin-mode {
-            background-color: #dbeafe !important;
-        }
-
-        .app-screen {
-            display: none;
-            padding-bottom: 50px;
-        }
-
-        .app-screen.active {
-            display: block;
-            animation: fadeIn 0.3s;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-
-            to {
-                opacity: 1;
-            }
-        }
-
-        /* UIパーツ */
-        .form-control,
-        .form-select {
-            background-color: #f9fbfd;
-            border: 1px solid #cdd4da;
-            border-radius: 4px;
-        }
-
-        .card {
-            border: none;
-            border-top: 3px solid #0d6efd;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, .05);
-            border-radius: 8px;
-            background-color: #fff;
-        }
-
-        .bg-white {
-            background-color: #fff !important;
-        }
-
-        .sidebar-label,
-        .form-label-top {
-            font-size: .8rem;
-            font-weight: bold;
-            color: #555;
-            margin-bottom: 4px;
-            display: inline-block;
-            background: #e9ecef;
-            padding: 2px 6px;
-            border-radius: 4px;
-        }
-
-        /* メニュー画面 */
-        .menu-layout {
-            display: flex;
-            gap: 20px;
-            align-items: flex-start;
-        }
-
-        .menu-left {
-            flex: 2;
-        }
-
-        .menu-right {
-            flex: 1;
-            min-width: 300px;
-        }
-
-        .menu-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-        }
-
-        .menu-card {
-            cursor: pointer;
-            background: #fff;
-            border: 1px solid #e2e8f0 !important;
-            border-radius: 8px !important;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
-            transition: all 0.2s ease !important;
-            padding: 25px 15px !important;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            border-top: 1px solid #e2e8f0 !important;
-        }
-
-        .menu-card:hover {
-            transform: translateY(-2px) !important;
-            border-color: #0d6efd !important;
-            box-shadow: 0 4px 6px rgba(13, 110, 253, 0.1) !important;
-            background-color: #f8fbff;
-        }
-
-        .menu-card i {
-            font-size: 2.5rem !important;
-            color: #555 !important;
-            margin-bottom: 12px !important;
-        }
-
-        .menu-card:hover i {
-            color: #0d6efd !important;
-        }
-
-        .menu-card h5 {
-            font-size: 1.1rem !important;
-            font-weight: 700 !important;
-            color: #333;
-            margin: 0;
-        }
-
-        .menu-card[style*="opacity"] {
-            background: #f9f9f9 !important;
-            border: 1px dashed #dce0e5 !important;
-            opacity: 1 !important;
-        }
-
-        .menu-card[style*="opacity"] h5,
-        .menu-card[style*="opacity"] i {
-            color: #adb5bd !important;
-        }
-
-        /* タイトル文字調整 */
-        #mainTitle {
-            font-size: 3rem !important;
-            letter-spacing: 2px;
-        }
-
-        #systemSubtitle {
-            font-size: 1.2rem !important;
-            letter-spacing: 1px;
-        }
-
-        @media(max-width:992px) {
-            .menu-layout {
-                flex-direction: column
-            }
-
-            .menu-right {
-                width: 100%
-            }
-        }
-
-        @media(max-width:768px) {
-            .menu-grid {
-                grid-template-columns: repeat(2, 1fr)
-            }
-        }
-
-        .dashboard-list-card {
-            display: flex;
-            background: #fff;
-            border-radius: 12px;
-            padding: 12px;
-            margin-bottom: 12px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-            border: 1px solid #eee;
-            align-items: center;
-            transition: transform 0.2s;
-        }
-
-        .dashboard-list-card-additional {
-            background-color: #fff9db !important;
-            border: 1px solid #fcc419 !important;
-        }
-
-        /* カレンダー */
-        .cal-container {
-            background: #fff;
-            border-radius: 8px;
-            padding: 15px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, .05);
-        }
-
-        .cal-month-wrap {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .cal-month-box {
-            width: 48%;
-            min-width: 140px;
-            border: 1px solid #eee;
-            border-radius: 4px;
-            overflow: hidden;
-            margin-bottom: 10px;
-        }
-
-        .cal-month-title {
-            background: #1a4f8b;
-            color: white;
-            text-align: center;
-            padding: 5px;
-            font-weight: bold;
-            font-size: 0.9rem;
-        }
-
-        .cal-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.8rem;
-            text-align: center;
-        }
-
-        .cal-table th {
-            border-bottom: 1px solid #ddd;
-            padding: 2px;
-            color: #555;
-        }
-
-        .cal-table td {
-            padding: 4px 0;
-        }
-
-        .cal-today {
-            background-color: #e7f1ff;
-            font-weight: bold;
-            color: #0d6efd;
-        }
-
-        .cal-holiday {
-            color: #fff !important;
-            background-color: #dc2626 !important;
-            border-radius: 50%;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 24px;
-            height: 24px;
-            margin: auto;
-        }
-
-        .cal-saturday {
-            color: #2563eb;
-            background-color: #eff6ff;
-        }
-
-        /* カレンダーナビゲーション */
-        .cal-nav-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-            padding: 0 5px;
-        }
-
-        .cal-nav-btn {
-            background: #fff;
-            border: 1px solid #ddd;
-            border-radius: 50%;
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s;
-            color: #1e3a8a;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        }
-
-        .cal-nav-btn:hover {
-            background: #f1f7ff;
-            border-color: #3b82f6;
-        }
-
-        /* テーブル表示用スタイル */
-        .table-dashboard {
-            width: 100%;
-            background: #fff;
-            border-collapse: separate;
-            border-spacing: 0;
-            font-size: 0.85rem;
-        }
-
-        .table-dashboard th {
-            background: #f8f9fa;
-            color: #333;
-            font-weight: bold;
-            padding: 12px 8px;
-            border-bottom: 2px solid #dee2e6;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-
-        .table-dashboard td {
-            padding: 8px;
-            border-bottom: 1px solid #eee;
-            vertical-align: middle;
-        }
-
-        .table-dashboard tr:hover {
-            background-color: #f1f7ff;
-        }
-
-        .table-dashboard .badge {
-            font-size: 0.75rem;
-        }
-
-        .row-additional {
-            background-color: #fffef0;
-        }
-
-        /* 納期マーク（赤丸・青丸） */
-        .cal-mark-standard,
-        .cal-mark-fullsub {
-            position: relative;
-            z-index: 1;
-        }
-
-        .cal-mark-standard::after {
-            content: "";
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 28px;
-            height: 28px;
-            border: 2px solid #ff4d4f;
-            /* 赤丸 */
-            border-radius: 50%;
-            z-index: -1;
-            pointer-events: none;
-        }
-
-        .cal-mark-fullsub::after {
-            content: "";
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 28px;
-            height: 28px;
-            border: 2px solid #1890ff;
-            /* 青丸 */
-            border-radius: 50%;
-            z-index: -1;
-            pointer-events: none;
-        }
-
-        .cal-legend {
-            display: flex;
-            gap: 12px;
-            font-size: 0.7rem;
-            margin-top: 15px;
-            padding: 10px;
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            justify-content: center;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-        }
-
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .circle-red {
-            width: 10px;
-            height: 10px;
-            border: 2px solid #ff4d4f;
-            border-radius: 50%;
-        }
-
-        .circle-blue {
-            width: 10px;
-            height: 10px;
-            border: 2px solid #1890ff;
-            border-radius: 50%;
-        }
-
-        .box-yellow {
-            width: 12px;
-            height: 12px;
-            background: #dc2626;
-            border-radius: 50%;
-        }
-
-        /* サイドバー */
-        #sidebarContainer {
-            width: 250px;
-            background: linear-gradient(180deg, #1a252f 0%, #2c3e50 100%);
-            transition: .3s;
-            box-shadow: 4px 0 10px rgba(0, 0, 0, .1);
-            min-height: 100vh;
-        }
-
-        .nav-link {
-            color: #bdc3c7 !important;
-        }
-
-        .nav-link.active {
-            background-color: #0d6efd !important;
-            color: #fff !important;
-        }
-
-        .sidebar-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, .5);
-            z-index: 1050;
-        }
-
-        .btn-pink {
-            background-color: #f7ced7;
-            border-color: #f7ced7;
-            color: #d63384;
-        }
-
-        .btn-pink:hover {
-            background-color: #f4b4c1;
-            border-color: #f4b4c1;
-            color: #a51d5d;
-        }
-
-        .btn-pink.active {
-            background-color: #d63384;
-            border-color: #d63384;
-            color: #fff;
-        }
-
-        /* Deep Sidebar-Theming */
-        .offcanvas.sidebar-pink {
-            border-left: 5px solid #d63384;
-        }
-
-        .sidebar-pink .offcanvas-header {
-            background-color: #d63384 !important;
-            color: #fff !important;
-        }
-
-        /* サイドバー内の文字は見やすくするためデフォルトのまま。ヘッダーだけピンク */
-
-        /* サイドバー内のプライマリボタンもテーマ色に */
-        .sidebar-pink .btn-primary {
-            background-color: #d63384 !important;
-            border-color: #d63384 !important;
-        }
-
-        .offcanvas.sidebar-green {
-            border-left: 5px solid #198754;
-        }
-
-        .sidebar-green .offcanvas-header {
-            background-color: #198754 !important;
-            color: #fff !important;
-        }
-
-        /* ヘッダーだけグリーン */
-
-        /* モーダル */
-        .modal-body-container {
-            height: 75vh;
-            display: flex;
-            flex-direction: row;
-        }
-
-        .modal-left-panel {
-            width: 350px;
-            overflow-y: auto;
-            background-color: #f8f9fa;
-            padding: 15px;
-            border-right: 1px solid #dee2e6;
-        }
-
-        .modal-right-panel {
-            flex: 1;
-            overflow-y: auto;
-            padding: 15px;
-            background-color: #fff;
-        }
-
-        @media(max-width:768px) {
-            .modal-body-container {
-                flex-direction: column;
-                height: auto;
-                max-height: 80vh;
-            }
-
-            .modal-left-panel {
-                width: 100%;
-                height: 200px;
-                border-right: none;
-                border-bottom: 1px solid #dee2e6;
-            }
-        }
-
-        /* アイテム入力タイル */
-        .size-tile-item {
-            display: inline-block;
-            width: 60px;
-            margin: 4px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            overflow: hidden;
-            background: #fff;
-        }
-
-        .size-tile-head {
-            background: #34495e;
-            color: #fff;
-            font-size: 11px;
-            font-weight: bold;
-            text-align: center;
-            padding: 4px 0;
-        }
-
-        .size-tile-input {
-            width: 100%;
-            border: none;
-            text-align: center;
-            font-weight: bold;
-            font-size: 15px;
-            padding: 8px 0;
-            outline: none;
-            background: #fff;
-        }
-
-        /* ダッシュボードリスト */
-        .dashboard-list-card {
-            background: #fff;
-            border: 1px solid #cdd4da;
-            border-radius: 6px;
-            margin-bottom: 10px;
-            display: flex;
-            overflow: hidden;
-            min-height: 110px;
-        }
-
-        .dl-img-area {
-            width: 200px;
-            background: #f8f9fa;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 5px;
-            flex-shrink: 0;
-        }
-
-        .dl-img-thumb {
-            max-width: 100%;
-            max-height: 180px;
-            object-fit: contain;
-            cursor: pointer;
-            border: 1px solid #ccc;
-            background: #fff;
-        }
-
-        .dl-content-area {
-            flex: 1;
-            padding: 8px 15px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        .dl-action-area {
-            width: 200px;
-            background: #fdfdfe;
-            padding: 10px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            gap: 6px;
-            flex-shrink: 0;
-            border-left: 1px solid #eee;
-        }
-
-        .dl-id {
-            background: #e7f1ff;
-            color: #0d6efd;
-            font-weight: bold;
-            padding: 1px 6px;
-            border-radius: 4px;
-            font-family: monospace;
-            font-size: .85rem;
-        }
-
-        .dl-title {
-            font-weight: bold;
-            font-size: 1.4rem;
-            color: #333;
-        }
-
-        .dl-checkbox-area {
-            width: 40px;
-            background: #fff;
-            border-right: 1px solid #dee2e6;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-
-        .order-checkbox {
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-        }
-
-        .dl-row-1,
-        .dl-row-2,
-        .dl-row-3,
-        .dl-row-4 {
-            display: flex;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 4px;
-        }
-
-        .dl-row-1 {
-            margin-bottom: 8px;
-        }
-
-        @media(max-width:768px) {
-            .dashboard-list-card {
-                flex-direction: column;
-            }
-
-            .dl-img-area {
-                width: 100%;
-                height: 150px;
-            }
-
-            .dl-action-area {
-                width: 100%;
-                border-left: none;
-                border-top: 1px solid #eee;
-                flex-direction: row;
-                flex-wrap: wrap;
-            }
-
-            .dl-action-area>* {
-                flex: 1;
-                min-width: 45%;
-            }
-        }
-
-        /* PDFスタイル */
-        #pdfExportContainer,
-        #pdfExportContainer_Portrait {
-            position: fixed;
-            left: -9999px;
-            top: 0;
-            z-index: -100;
-            overflow: hidden;
-        }
-
-        .pdf-table,
-        .pp-table {
-            width: 100%;
-            border-collapse: collapse;
-            border: 2px solid #000;
-            margin-bottom: 0;
-        }
-
-        .pdf-table th,
-        .pdf-table td,
-        .pp-table th,
-        .pp-table td {
-            border: 1px solid #000;
-            padding: 2px;
-            text-align: center;
-            font-size: 12px;
-            font-weight: bold;
-        }
-
-        .pdf-table th,
-        .pp-table th {
-            background: #e0e0e0;
-            font-weight: bold;
-        }
-
-        .pp-header-title {
-            text-align: center;
-            font-size: 24px;
-            font-weight: bold;
-            border-bottom: 2px solid #000;
-            margin-bottom: 10px;
-        }
-
-        .pp-design-area {
-            width: 100%;
-            height: 320px;
-            border: 2px solid #000;
-            margin-bottom: 5px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .pp-design-area img {
-            max-width: 98%;
-            max-height: 98%;
-            object-fit: contain;
-        }
-
-        .pp-list-container {
-            display: flex;
-            gap: 5px;
-            align-items: flex-start;
-        }
-
-        .pp-list-col {
-            flex: 1;
-        }
-
-        .pdf-sec-title {
-            background: #000;
-            color: #fff;
-            font-weight: bold;
-            padding: 4px 8px;
-            font-size: 12px;
-            margin-bottom: 0px;
-        }
-
-        .pdf-img-frame {
-            width: 100%;
-            height: 450px;
-            border: 1px solid #ccc;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #fff;
-        }
-
-        .pdf-img-frame img {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-        }
-
-        /* カラー定義 */
-        .bg-danger {
-            background-color: #dc3545 !important;
-            color: #fff !important;
-        }
-
-        .bg-info {
-            background-color: #0dcaf0 !important;
-            color: #fff !important;
-        }
-
-        .bg-yellow-green {
-            background-color: #8bc34a !important;
-            color: #fff !important;
-        }
-
-        .bg-secondary {
-            background-color: #6c757d !important;
-            color: #fff !important;
-        }
-
-        .bg-warning {
-            background-color: #ffc107 !important;
-            color: #000 !important;
-        }
-
-        .proc-row-item {
-            border-right: 1px solid #000;
-            padding: 5px 10px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 12px;
-            flex: 1;
-        }
-
-        .proc-badge {
-            background: #ddd;
-            padding: 2px 6px;
-            border: 1px solid #999;
-            font-weight: bold;
-        }
-
-        /* 右側パネル用 */
-        .summary-card {
-            border: 1px solid #6c757d;
-            border-radius: 4px;
-            margin-bottom: 15px;
-        }
-
-        .summary-header {
-            background-color: #6c757d;
-            color: #fff;
-            font-weight: bold;
-            padding: 5px 10px;
-        }
-
-        .summary-body {
-            padding: 10px;
-            background-color: #fff;
-        }
-
-        .large-text {
-            font-size: 1.1rem;
-            font-weight: bold;
-        }
-
-        /* テーブル内入力フォーム */
-        .table-input {
-            width: 100%;
-            border: 1px solid transparent;
-            background: transparent;
-            text-align: center;
-            font-size: 0.85rem;
-        }
-
-        .table-input:focus {
-            border: 1px solid #86b7fe;
-            background: #fff;
-            outline: none;
-        }
-    </style>
-</head>
-
-<body>
-
-    <div id="sidebarOverlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
-
-    <div id="loginModal"
-        style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:9999;display:flex;justify-content:center;align-items:center">
-        <div class="bg-white p-5 rounded shadow" style="width:90%;max-width:400px">
-            <h4 class="text-center fw-bold mb-4" style="color:#0d6efd">ZO SYSTEM</h4>
-            <div class="mb-3"><input type="text" id="loginId" class="form-control" placeholder="ID" value="1001"></div>
-            <div class="mb-4"><input type="password" id="loginPass" class="form-control" placeholder="PW"
-                    value="pass1234"></div>
-            <button class="btn btn-primary w-100 py-2 fw-bold" onclick="handleLogin()">ログイン</button>
-            <div id="loginMsg" class="text-danger text-center mt-3 small"></div>
-        </div>
-    </div>
-
-    <div id="menuScreen" class="app-screen container py-5" style="max-width:1200px">
-        <div id="adminReturnBtn" class="mb-3" style="display:none"><button class="btn btn-outline-primary btn-sm"
-                onclick="showScreen('dashboardScreen')">ダッシュボードへ</button></div>
-        <div class="text-center mb-5">
-            <h1 id="mainTitle" style="color:#0d6efd;font-weight:bold">ZO SYSTEM</h1><span id="systemSubtitle"
-                class="text-muted">Order Management System</span>
-            <div id="menuUserInfo" class="mt-2 fw-bold text-dark"></div>
-        </div>
-        <div id="adminMenuTools" class="text-center mb-4" style="display:none;">
-            <div class="d-flex justify-content-center gap-2 flex-wrap">
-                <button class="btn btn-dark btn-sm shadow-sm px-3 fw-bold" onclick="downloadAllDataCsv()"><i
-                        class="fas fa-file-csv me-2"></i>全データCSV出力</button>
-                <button class="btn btn-danger btn-sm shadow-sm px-3 fw-bold" onclick="openProductMasterModal()"><i
-                        class="fas fa-barcode me-2"></i>商品マスタ登録</button>
-                <button class="btn btn-danger btn-sm shadow-sm px-3 fw-bold" onclick="openProcMasterModal()"><i
-                        class="fas fa-tools me-2"></i>加工マスタ登録</button>
-            </div>
-        </div>
-        <div class="menu-layout">
-            <div class="menu-left">
-                <div class="menu-grid">
-                    <div class="menu-card" onclick="openNewForm()"><i class="fas fa-edit"></i>
-                        <h5 class="fw-bold m-0">指示書作成</h5>
-                    </div>
-                    <div class="menu-card" onclick="openFullSubForm()"><i class="fas fa-tshirt"></i>
-                        <h5 class="fw-bold m-0">フル昇華指示</h5>
-                    </div>
-                    <div class="menu-card" onclick="showScreen('dashboardScreen');loadDashboard()"><i
-                            class="fas fa-search"></i>
-                        <h5 class="fw-bold m-0">注文検索</h5>
-                    </div>
-                    <div class="menu-card" style="opacity:0.6"><i class="fas fa-edit"></i>
-                        <h5 class="fw-bold m-0">指示書(予備)</h5>
-                    </div>
-                    <div class="menu-card" style="opacity:0.6"><i class="fas fa-tshirt"></i>
-                        <h5 class="fw-bold m-0">フル昇華(予備)</h5>
-                    </div>
-                    <div class="menu-card" style="opacity:0.6"><i class="fas fa-search"></i>
-                        <h5 class="fw-bold m-0">検索(予備)</h5>
-                    </div>
-                </div>
-            </div>
-            <div class="menu-right">
-                <div class="cal-container">
-                    <div id="calendarArea"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="dashboardScreen" class="app-screen" style="padding:0;height:100vh;overflow:hidden">
-        <div class="d-flex h-100">
-            <div id="sidebarContainer" class="d-flex flex-column text-white p-3">
-                <h5 id="sidebarTitle" class="fw-bold mb-4 px-2">ZO SYSTEM</h5>
-                <ul class="nav nav-pills flex-column mb-auto">
-                    <li class="nav-item">
-                        <a href="#" class="nav-link active" onclick="renderAdminViewByType('all')">
-                            <i class="fas fa-list me-2"></i>受注一覧
-                        </a>
-                    </li>
-                    <li id="adminProcListNav" style="display:none;">
-                        <a href="#" class="nav-link text-white-50 small ms-3 py-1"
-                            onclick="renderAdminViewByType('processing')">
-                            <i class="fas fa-angle-right me-1"></i>加工指示
-                        </a>
-                    </li>
-                    <li id="adminFullSubListNav" style="display:none;">
-                        <a href="#" class="nav-link text-white-50 small ms-3 py-1"
-                            onclick="renderAdminViewByType('fullsub')">
-                            <i class="fas fa-angle-right me-1"></i>フル昇華
-                        </a>
-                    </li>
-                    <li class="mt-2 text-muted small px-3">設定</li>
-                    <li><a href="#" class="nav-link text-white-50" onclick="goToAdminMenu()">
-                            <i class="fas fa-th me-2"></i>メニューへ戻る</a>
-                    </li>
-                    <li id="adminProductNav" style="display:none"><a href="#" class="nav-link text-white-50"
-                            onclick="openProductMasterModal()">商品登録</a></li>
-                    <li id="adminProcNav" style="display:none"><a href="#" class="nav-link text-white-50"
-                            onclick="openProcMasterModal()">加工マスタ</a></li>
-                    <li id="adminCustomerNav" style="display:none"><a href="#" class="nav-link text-white-50"
-                            onclick="openCustomerCsvModal()">顧客CSV</a></li>
-                </ul>
-                <div class="mt-auto d-md-none"><button class="btn btn-outline-light w-100 btn-sm"
-                        onclick="toggleSidebar()">閉じる</button></div>
-            </div>
-            <div class="flex-grow-1 d-flex flex-column bg-light overflow-hidden">
-                <div class="bg-white border-bottom p-3 shadow-sm d-flex justify-content-between align-items-center">
-                    <div class="d-flex align-items-center gap-3"><button
-                            class="btn btn-light border shadow-sm d-md-none" onclick="toggleSidebar()"><i
-                                class="fas fa-bars"></i></button>
-                        <div>
-                            <h5 class="m-0 fw-bold text-secondary">ダッシュボード</h5><small id="dashboardUserInfo"
-                                class="text-primary fw-bold" style="font-size:0.85rem"></small>
-                        </div>
-                    </div>
-                    <div class="d-flex gap-2 align-items-center" id="dashboardHeaderButtons">
-                        <select id="adminCustomerFilter"
-                            class="form-select form-select-sm shadow-sm fw-bold border-dark"
-                            style="width:160px; display:none" onchange="applyDashboardFilters()">
-                            <option value="">全ての顧客</option>
-                        </select>
-                        <select id="adminSortOrder" class="form-select form-select-sm shadow-sm fw-bold border-dark"
-                            style="width:140px; display:none" onchange="applyDashboardFilters()">
-                            <option value="latest">最新順</option>
-                            <option value="customer_asc">顧客名順 (A-Z)</option>
-                            <option value="customer_desc">顧客名順 (Z-A)</option>
-                        </select>
-                        <button class="btn btn-success btn-sm shadow-sm fw-bold px-3 text-nowrap"
-                            id="combinedBillingBtn" onclick="openCombinedBilling()" style="display:none"><i
-                                class="fas fa-calculator me-1"></i>まとめて請求</button><button
-                            class="btn btn-outline-dark btn-sm shadow-sm fw-bold px-3 text-nowrap"
-                            onclick="exportToCsv()"><i class="fas fa-file-csv me-1"></i>CSV出力</button>
-                        <div class="input-group input-group-sm" style="width:200px"><input type="text"
-                                id="dashboardSearch" class="form-control" placeholder="検索..."
-                                onkeyup="applyDashboardFilters()"><button class="btn btn-dark"><i
-                                    class="fas fa-search"></i></button></div>
-                        <div class="btn-group btn-group-sm shadow-sm ms-2" id="adminViewModeToggle"
-                            style="display:none">
-                            <button class="btn btn-outline-dark active" id="btnViewCard"
-                                onclick="setViewMode('card')"><i class="fas fa-th-large"></i></button>
-                            <button class="btn btn-outline-dark" id="btnViewTable" onclick="setViewMode('table')"><i
-                                    class="fas fa-list"></i></button>
-                        </div>
-                        <button class="btn btn-primary btn-sm shadow-sm px-3" onclick="loadDashboard()"><i
-                                class="fas fa-sync-alt me-1"></i>更新</button>
-                    </div>
-                </div>
-                <div class="flex-grow-1 overflow-auto p-3">
-                    <div class="mb-3 d-flex flex-wrap align-items-center gap-2">
-                        <div id="dashboardFilterContainer" class="d-flex gap-2"></div>
-                        <div id="adminDateFilter" class="d-flex gap-2 ms-2"
-                            style="display:none;border-left:2px solid #ddd;padding-left:10px">
-                            <div class="input-group input-group-sm"><span
-                                    class="input-group-text bg-white">発注</span><input type="date" id="filterOrderDate"
-                                    class="form-control" onchange="applyDashboardFilters()"></div>
-                            <div class="input-group input-group-sm"><span
-                                    class="input-group-text bg-white">納期</span><input type="date"
-                                    id="filterDeliveryDate" class="form-control" onchange="applyDashboardFilters()">
-                            </div>
-                        </div>
-                    </div>
-                    <div id="dashboardListContainer" class="pb-5"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="formScreen" class="app-screen container-fluid py-4" style="max-width:1400px">
-        <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
-            <div class="d-flex align-items-center gap-2">
-                <button class="btn btn-light border shadow-sm" onclick="showScreen('menuScreen')"><i
-                        class="fas fa-arrow-left"></i></button>
-                <h5 class="fw-bold m-0">No.<span id="orderId" class="text-primary"></span></h5>
-            </div>
-            <div class="d-flex gap-2 ms-auto">
-                <input type="text" id="customerName" class="form-control form-control-sm" style="width:200px"
-                    placeholder="顧客名" onblur="syncCustomerUrls()">
-                <input type="text" id="managerName" class="form-control form-control-sm" style="width:120px"
-                    placeholder="担当者">
-                <button class="btn btn-outline-success fw-bold shadow-sm" onclick="saveDraft()"><i
-                        class="fas fa-save me-2"></i>一時保存</button>
-                <button class="btn btn-dark fw-bold shadow-sm" onclick="openPreviewModal()"><i
-                        class="fas fa-file-pdf me-2"></i>PDF確認</button>
-            </div>
-        </div>
-
-        <div class="card p-3 mb-3 shadow-sm border-0" style="border-radius:12px;">
-            <div class="d-flex align-items-end gap-3"
-                style="overflow-x: auto; white-space: nowrap; padding-bottom: 5px;">
-                <div style="flex: 0 0 80px;"><label class="form-label-top">タイプ</label><select
-                        class="form-select form-select-sm" id="orderType">
-                        <option value="新規">新規</option>
-                        <option value="追加">追加</option>
-                    </select></div>
-                <div style="flex: 1 0 250px;"><label class="form-label-top">物件名</label><input type="text"
-                        class="form-control form-select-sm" id="teamName"></div>
-                <div style="flex: 0 0 130px;"><label class="form-label-top">競技</label><select
-                        class="form-select form-select-sm" id="sportType" onchange="updateProductList()"></select></div>
-                <div style="flex: 0 0 160px;"><label class="form-label-top">カテゴリ</label><select
-                        class="form-select form-select-sm" id="productCategory"></select></div>
-                <div style="flex: 0 0 130px;"><label class="form-label-top">発注日</label><input type="date"
-                        class="form-control form-select-sm" id="orderDate" onchange="updateDeliveryDate()"></div>
-                <div style="flex: 0 0 130px;"><label class="form-label-top">希望納期</label><input type="date"
-                        class="form-control form-select-sm" id="deliveryDate" onchange="checkDeliveryDate()"></div>
-                <div id="adminSuffixContainer" style="flex: 0 0 240px; display:none;"><label
-                        class="form-label-top">管理番号末尾</label>
-                    <div class="input-group input-group-sm">
-                        <input type="text" class="form-control" id="m_admin_no_suffix" placeholder="例: 001">
-                        <button class="btn btn-primary" onclick="syncWithSpreadsheet()"
-                            id="btnSyncSpreadsheet">採番</button>
-                        <button class="btn btn-outline-secondary" onclick="copyForSpreadsheet()"><i
-                                class="fas fa-copy"></i></button>
-                    </div>
-                </div>
-                <!-- COLOR設定は削除されました -->
-            </div>
-            <div id="deliveryWarning" class="text-danger fw-bold small text-end mt-1"></div>
-        </div>
-
-        <div class="row g-3">
-            <div class="col-md-6 d-flex flex-column" style="height: 700px;">
-                <div class="input-group mb-2">
-                    <input type="text" id="pdfUrlInput" class="form-control" placeholder="デザイン画像URL（Google Drive共有リンク）">
-                    <button class="btn btn-outline-info" onclick="openDataFolder()"><i
-                            class="fas fa-folder-open"></i></button>
-                    <button class="btn btn-primary" onclick="loadPdf()">反映</button>
-                    <button class="btn btn-outline-secondary" onclick="clearPdf()">×</button>
-                </div>
-                <div id="pdfViewer"
-                    class="flex-grow-1 border rounded bg-light d-flex align-items-center justify-content-center"
-                    style="position:relative; overflow:hidden;">
-                    <div id="loadingSpinner" class="spinner-border text-primary" role="status" style="display:none">
-                    </div>
-                    <img id="previewImg" alt="プレビュー"
-                        style="max-width:100%; max-height:100%; display:none; object-fit:contain;">
-                    <small id="viewerMsg" class="text-muted" style="position:absolute;">NO IMAGE</small>
-                </div>
-            </div>
-
-            <div class="col-md-6" style="height: 700px; overflow-y: auto;">
-                <div class="d-flex gap-2 mb-3">
-                    <button id="btn-prod" class="btn btn-primary fw-bold flex-grow-1 py-2"
-                        onclick="openSearchModal()"><i class="fas fa-tshirt me-1"></i> 商品登録/個人リスト</button>
-                    <button id="btn-prod-carry" class="btn btn-success fw-bold flex-grow-1 py-2" style="display:none"
-                        onclick="openItemInputSidebar()"><i class="fas fa-box-open me-1"></i> 持ち込み商品</button>
-                    <button id="btn-proc" class="btn btn-success fw-bold flex-grow-1 py-2"
-                        onclick="openProcSidebar()"><i class="fas fa-paint-brush me-1"></i> 加工内容</button>
-                    <button class="btn btn-warning text-dark fw-bold flex-grow-1 py-2"
-                        onclick="new bootstrap.Offcanvas(document.getElementById('excelImportSidebar')).show()"><i
-                            class="fas fa-file-excel me-1"></i> 一括入力</button>
-                </div>
-                <div class="summary-card">
-                    <div class="summary-header d-flex justify-content-between align-items-center">
-                        <div>商品リスト <span id="totalQty" class="badge bg-white text-dark ms-2">0枚</span></div>
-                        <button class="btn btn-info btn-xs py-0 px-2 fw-bold text-white shadow-sm" onclick="exportPartUrls()" style="font-size:0.75rem;"><i class="fas fa-file-export me-1"></i>URL出力</button>
-                    </div>
-                    <div class="summary-body" id="rightPanelProductList">
-                        <div class="text-center text-muted small py-3">商品が登録されていません</div>
-                    </div>
-                </div>
-                <div class="summary-card" id="card-proc">
-                    <div class="summary-header d-flex justify-content-between align-items-center">
-                        加工リスト
-                        <button class="btn btn-primary btn-xs py-0 px-2 fw-bold" onclick="openProcSidebar()"
-                            style="font-size:0.75rem;">＋追加</button>
-                    </div>
-                    <div class="summary-body" id="rightPanelProcList">
-                        <div class="text-center text-muted small py-3">加工なし</div>
-                    </div>
-                </div>
-                <div class="summary-card">
-                    <div class="summary-header">個人リスト</div>
-                    <div class="summary-body p-0">
-                        <table class="table table-bordered table-sm m-0 text-center" style="font-size:0.85rem;">
-                            <thead class="bg-light">
-                                <tr>
-                                    <th style="width:40px">No</th>
-                                    <th>サイズ</th>
-                                    <th>番号</th>
-                                    <th>NAME</th>
-                                </tr>
-                            </thead>
-                            <tbody id="rightPanelPlayerList">
-                                <tr>
-                                    <td colspan="4" class="text-muted py-3">登録なし</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="itemSearchModal" tabindex="-1">
-        <div class="modal-dialog modal-xl">
-            <div class="modal-content">
-                <div class="modal-header py-2 bg-light">
-                    <h6 class="m-0">商品選択</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body p-0 modal-body-container">
-                    <div class="modal-left-panel">
-                        <div class="p-2 border-bottom bg-white">
-                            <label class="small fw-bold mb-1">メーカー</label>
-                            <select id="modalMakerSelect" class="form-select form-select-sm mb-2"
-                                onchange="filterModalItems()">
-                                <option value="">すべて</option>
-                            </select>
-                            <label class="small fw-bold mb-1">カテゴリ</label>
-                            <select id="modalCategorySelect" class="form-select form-select-sm mb-2"
-                                onchange="filterModalItems()">
-                                <option value="">すべて</option>
-                            </select>
-                            <label class="small fw-bold mb-1">品番</label>
-                            <select id="modalNoSelect" class="form-select form-select-sm mb-2"
-                                onchange="filterModalItems()">
-                                <option value="">すべて</option>
-                            </select>
-                            <label class="small fw-bold mb-1">商品名</label>
-                            <select id="modalNameSelect" class="form-select form-select-sm mb-2"
-                                onchange="filterModalItems()">
-                                <option value="">すべて</option>
-                            </select>
-                            <label class="small fw-bold mb-1">キーワード検索</label>
-                            <input type="text" id="modalSearchInput" class="form-control form-control-sm"
-                                placeholder="品番など..." oninput="filterModalItems()">
-                        </div>
-                        <div id="modalItemListContainer" class="flex-grow-1 overflow-auto"></div>
-                    </div>
-                    <div class="modal-right-panel">
-                        <div class="bg-primary text-white p-2">
-                            <div class="small fw-bold" style="opacity:0.8">選択中の商品:</div>
-                            <div id="selectedItemTitle" class="fw-bold h6 m-0">未選択</div>
-                        </div>
-                        <div id="modalInputArea" class="flex-grow-1 overflow-auto p-2"></div>
-                        <div class="text-end p-2 border-top bg-light">
-                            <button class="btn btn-success btn-sm me-2" onclick="addModalColorRow()">＋ カラー追加</button>
-                            <button class="btn btn-primary btn-sm px-4 fw-bold"
-                                onclick="addProductFromModal()">決定</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="modal fade" id="productMasterModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header bg-dark text-white">
-                    <h6 class="modal-title">商品登録</h6><button type="button" class="btn-close btn-close-white"
-                        data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <p class="small text-muted mb-2">エクセル等から以下の列順でコピーし、そのまま貼り付けてください。<br>
-                        <span class="fw-bold text-danger">①メーカー　②カテゴリ　③品番　④商品名　⑤サイズ　⑥カラー</span>
-                    </p>
-                    <textarea id="reg_item_csv" class="form-control form-control-sm" rows="12"
-                        placeholder="ここにペースト..."></textarea>
-                </div>
-                <div class="modal-footer"><button class="btn btn-primary w-100"
-                        onclick="saveProductMaster()">登録</button></div>
-            </div>
-        </div>
-    </div>
-    <div class="modal fade" id="procMasterModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header bg-dark text-white">
-                    <h6 class="modal-title">加工マスタ登録</h6><button type="button" class="btn-close btn-close-white"
-                        data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <p class="small text-muted mb-2">加工の選択肢を一括登録・更新します。<br>
-                        以下の列順（タブ区切り）で貼り付けてください。<br>
-                        <span class="fw-bold text-danger">①種別（エリア/分類/カラー）　②親項目　③詳細（カンマ区切り）</span>
-                    </p>
-                    <textarea id="reg_proc_csv" class="form-control form-control-sm" rows="12"
-                        placeholder="エリア	シャツ前面	全胸,左胸,右胸..."></textarea>
-                </div>
-                <div class="modal-footer"><button class="btn btn-primary w-100" onclick="saveProcMaster()">登録</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="modal fade" id="customerCsvModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header bg-dark text-white">
-                    <h6 class="modal-title">顧客CSV登録</h6><button type="button" class="btn-close btn-close-white"
-                        data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-2 small text-muted">CSV形式: A:ID, B:顧客名, C:担当, D:Email, E:Pass, F:過去フォルダ, G:昇華フォルダ,
-                        H:指示書GAS, I:フル昇華GAS</div><input type="file" id="customerCsvFile" class="form-control" accept=".csv">
-                </div>
-                <div class="modal-footer"><button class="btn btn-primary w-100" onclick="saveCustomerCsv()">登録</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 一括入力サイドバー -->
-    <div class="offcanvas offcanvas-end" tabindex="-1" id="excelImportSidebar" style="width:600px;">
-        <div class="offcanvas-header bg-warning text-dark">
-            <h5 class="offcanvas-title fw-bold">一括入力 (Excel/スプレッドシート)</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
-        </div>
-        <div class="offcanvas-body">
-            <div class="mb-3">
-                <label class="form-label-top fw-bold">スプレッドシートのデータを貼り付けてください</label>
-                <div class="small fw-bold">推奨形式:</div>
-                <div class="small text-muted mb-1">1. [品番] [Tab] [サイズ] [Tab] [番号] [Tab] [名前] (下書きコピー形式)</div>
-                <div class="small text-muted mb-2">2. [品番] [Tab] [本体色] [Tab] [サイズ] [Tab] [数量] [Tab] [番号] [Tab] [名前]
-                </div>
-                <textarea id="unifiedPasteArea" class="form-control" rows="15"
-                    style="font-family: monospace; font-size: 0.85rem;" placeholder="ここに貼り付け..."></textarea>
-            </div>
-            <div class="alert alert-info small">
-                <i class="fas fa-info-circle me-1"></i> 1行目に「品番」「番号」「名前」などを含む行は自動でスキップされます。<br>
-                <i class="fas fa-lightbulb me-1 text-warning"></i> 「番号 [Tab] 名前」の2列だけで貼り付けて、下の緑のボタンを押すと名簿のみ更新できます。
-            </div>
-        </div>
-        <div class="offcanvas-footer p-3 border-top text-end bg-light">
-            <button class="btn btn-link btn-sm text-decoration-none me-auto" onclick="openDraftTemplate()">
-                <i class="fas fa-external-link-alt me-1"></i>コピー & テンプレートを開く
-            </button>
-            <button class="btn btn-outline-success px-3 fw-bold me-2" onclick="applyPasteData()">番号・名前のみ反映</button>
-            <button class="btn btn-primary px-4 fw-bold" onclick="applyUnifiedPaste()">全て一括反映</button>
-        </div>
-    </div>
-
-    <div class="offcanvas offcanvas-end" tabindex="-1" id="itemInputSidebar" style="width:450px">
-        <div class="offcanvas-header" id="sbHeader">
-            <h5 class="offcanvas-title fw-bold">アイテム入力</h5><button type="button" class="btn-close btn-close-white"
-                data-bs-dismiss="offcanvas"></button>
-        </div>
-        <div class="offcanvas-body bg-light">
-            <div class="card p-3 shadow-sm border-0">
-                <div class="row g-3">
-                    <div class="col-12" id="sbNameRow">
-                        <label class="form-label-top">商品名</label>
-                        <input type="text" id="sb_name" class="form-control form-control-sm" list="itemSuggestionList"
-                                placeholder="商品名を入力..." oninput="autoFillPatternNo()">
-                        <datalist id="itemSuggestionList"></datalist>
-                    </div>
-                    <div class="col-12" id="sbProductNameRow" style="display:none;">
-                        <label class="form-label-top">商品名</label>
-                        <input type="text" id="sb_product_name" class="form-control form-control-sm" placeholder="商品名を入力...">
-                    </div>
-                    <div class="col-12" id="sbPatternRow">
-                        <label class="form-label-top">品番</label>
-                        <div class="input-group input-group-sm">
-                            <input type="text" id="sb_pattern" class="form-control" placeholder="品番を入力..." oninput="onSbPatternInput()">
-                            <button class="btn btn-outline-secondary" type="button" id="sb_search_net_btn" onclick="openNetSearch()" title="ネットで検索" style="display:none;">
-                                <i class="fas fa-search me-1"></i><span style="font-size:0.7rem">ネット検索</span>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="col-12" id="sbItemUrlRow" style="display:none;">
-                        <label class="form-label-top small">商品画像URL / 参考URL</label>
-                        <div class="input-group input-group-sm">
-                            <input type="text" id="sb_item_url" class="form-control" placeholder="ここに写真のURLを貼り付け...">
-                            <button class="btn btn-outline-info" type="button" onclick="const u=document.getElementById('sb_item_url').value; if(u)window.open(u,'_blank');" title="リンクを確認">
-                                <i class="fas fa-external-link-alt"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="col-12" id="sbFabricRow">
-                        <label class="form-label-top">生地</label>
-                        <select id="sb_fabric" class="form-select">
-                            <option value="">選択してください</option>
-                        </select>
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label-top mb-1">サイズ表記</label>
-                        <div class="btn-group btn-group-sm w-100 mb-2">
-                            <input type="radio" class="btn-check" name="sizeMode" id="sz_xl" value="xl" checked
-                                onchange="updateSizeGridLabels()"><label class="btn btn-outline-secondary"
-                                for="sz_xl">XL表記</label>
-                            <input type="radio" class="btn-check" name="sizeMode" id="sz_o" value="o"
-                                onchange="updateSizeGridLabels()"><label class="btn btn-outline-secondary"
-                                for="sz_o">O表記</label>
-                            <input type="radio" class="btn-check" name="sizeMode" id="sz_ll" value="ll"
-                                onchange="updateSizeGridLabels()"><label class="btn btn-outline-secondary"
-                                for="sz_ll">LL表記</label>
-                            <input type="radio" class="btn-check" name="sizeMode" id="sz_manual" value="manual"
-                                onchange="updateSizeGridLabels()"><label class="btn btn-outline-secondary"
-                                for="sz_manual">打ち込み</label>
-                        </div>
-                    </div>
-                    <input type="hidden" id="sb_edit_index" value="">
-                    <div class="col-12"><label class="form-label-top mb-1">サイズ・数量入力</label>
-                        <div class="sb-grid-container" id="sbGridContainer"
-                            style="display:grid;grid-template-columns:repeat(6,1fr);gap:4px;text-align:center">
-                            <!-- JSで中身が生成・更新されるようにするため、雛形を維持しつつIDを付与 -->
-                            <div class="p-1 border rounded bg-white sz-box" data-base="100">
-                                <div class="sz-label small fw-bold mb-1" style="font-size:0.6rem">100</div>
-                                <input type="number" class="form-control form-control-sm sb-qty text-center p-0"
-                                    placeholder="0">
-                                <input type="hidden" class="sb-size" value="100">
-                            </div>
-                            <div class="p-1 border rounded bg-white sz-box" data-base="110">
-                                <div class="sz-label small fw-bold mb-1" style="font-size:0.6rem">110</div>
-                                <input type="number" class="form-control form-control-sm sb-qty text-center p-0"
-                                    placeholder="0">
-                                <input type="hidden" class="sb-size" value="110">
-                            </div>
-                            <div class="p-1 border rounded bg-white sz-box" data-base="120">
-                                <div class="sz-label small fw-bold mb-1" style="font-size:0.6rem">120</div>
-                                <input type="number" class="form-control form-control-sm sb-qty text-center p-0"
-                                    placeholder="0">
-                                <input type="hidden" class="sb-size" value="120">
-                            </div>
-                            <div class="p-1 border rounded bg-white sz-box" data-base="130">
-                                <div class="sz-label small fw-bold mb-1" style="font-size:0.6rem">130</div>
-                                <input type="number" class="form-control form-control-sm sb-qty text-center p-0"
-                                    placeholder="0">
-                                <input type="hidden" class="sb-size" value="130">
-                            </div>
-                            <div class="p-1 border rounded bg-white sz-box" data-base="140">
-                                <div class="sz-label small fw-bold mb-1" style="font-size:0.6rem">140</div>
-                                <input type="number" class="form-control form-control-sm sb-qty text-center p-0"
-                                    placeholder="0">
-                                <input type="hidden" class="sb-size" value="140">
-                            </div>
-                            <div class="p-1 border rounded bg-white sz-box" data-base="150">
-                                <div class="sz-label small fw-bold mb-1" style="font-size:0.6rem">150</div>
-                                <input type="number" class="form-control form-control-sm sb-qty text-center p-0"
-                                    placeholder="0">
-                                <input type="hidden" class="sb-size" value="150">
-                            </div>
-                            <div class="p-1 border rounded bg-white sz-box" data-base="160">
-                                <div class="sz-label small fw-bold mb-1" style="font-size:0.6rem">160</div>
-                                <input type="number" class="form-control form-control-sm sb-qty text-center p-0"
-                                    placeholder="0">
-                                <input type="hidden" class="sb-size" value="160">
-                            </div>
-                            <div class="p-1 border rounded bg-white sz-box" data-base="XS">
-                                <div class="sz-label small fw-bold mb-1" style="font-size:0.6rem">XS</div>
-                                <input type="number" class="form-control form-control-sm sb-qty text-center p-0"
-                                    placeholder="0">
-                                <input type="hidden" class="sb-size" value="XS">
-                            </div>
-                            <div class="p-1 border rounded bg-white sz-box" data-base="S">
-                                <div class="sz-label small fw-bold mb-1" style="font-size:0.6rem">S</div>
-                                <input type="number" class="form-control form-control-sm sb-qty text-center p-0"
-                                    placeholder="0">
-                                <input type="hidden" class="sb-size" value="S">
-                            </div>
-                            <div class="p-1 border rounded bg-white sz-box" data-base="M">
-                                <div class="sz-label small fw-bold mb-1" style="font-size:0.6rem">M</div>
-                                <input type="number" class="form-control form-control-sm sb-qty text-center p-0"
-                                    placeholder="0">
-                                <input type="hidden" class="sb-size" value="M">
-                            </div>
-                            <div class="p-1 border rounded bg-white sz-box" data-base="L">
-                                <div class="sz-label small fw-bold mb-1" style="font-size:0.6rem">L</div>
-                                <input type="number" class="form-control form-control-sm sb-qty text-center p-0"
-                                    placeholder="0">
-                                <input type="hidden" class="sb-size" value="L">
-                            </div>
-                            <div class="p-1 border rounded bg-white sz-box" data-base="XL">
-                                <div class="sz-label small fw-bold mb-1" style="font-size:0.6rem">XL</div>
-                                <input type="number" class="form-control form-control-sm sb-qty text-center p-0"
-                                    placeholder="0">
-                                <input type="hidden" class="sb-size" value="XL">
-                            </div>
-                            <div class="p-1 border rounded bg-white sz-box" data-base="2XL">
-                                <div class="sz-label small fw-bold mb-1" style="font-size:0.6rem">2XL</div>
-                                <input type="number" class="form-control form-control-sm sb-qty text-center p-0"
-                                    placeholder="0">
-                                <input type="hidden" class="sb-size" value="2XL">
-                            </div>
-                            <div class="p-1 border rounded bg-white sz-box" data-base="3XL">
-                                <div class="sz-label small fw-bold mb-1" style="font-size:0.6rem">3XL</div>
-                                <input type="number" class="form-control form-control-sm sb-qty text-center p-0"
-                                    placeholder="0">
-                                <input type="hidden" class="sb-size" value="3XL">
-                            </div>
-                            <div class="p-1 border rounded bg-white sz-box" data-base="4XL">
-                                <div class="sz-label small fw-bold mb-1" style="font-size:0.6rem">4XL</div>
-                                <input type="number" class="form-control form-control-sm sb-qty text-center p-0"
-                                    placeholder="0">
-                                <input type="hidden" class="sb-size" value="4XL">
-                            </div>
-                            <div class="p-1 border rounded bg-white sz-box" data-base="5XL">
-                                <div class="sz-label small fw-bold mb-1" style="font-size:0.6rem">5XL</div>
-                                <input type="number" class="form-control form-control-sm sb-qty text-center p-0"
-                                    placeholder="0">
-                                <input type="hidden" class="sb-size" value="5XL">
-                            </div>
-                            <div class="d-flex flex-column justify-content-end bg-white border rounded p-1">
-                                <small class="fw-bold text-muted" style="font-size:0.6rem">合計</small>
-                                <div id="sb-total-display" class="fw-bold text-center text-primary"
-                                    style="font-size:0.9rem">0</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-12 mt-2">
-                        <label class="form-label-top small fw-bold">下書きデータ (コピー用)</label>
-                        <textarea id="sb_draft_area" class="form-control small" rows="1" readonly
-                            style="font-family:monospace;font-size:0.75rem;background-color:#f8f9fa"
-                            placeholder="数量を入力すると生成されます"></textarea>
-                    </div>
-                </div>
-            </div>
-            <div class="offcanvas-footer p-3 bg-white border-top">
-                <div class="d-grid gap-2">
-                    <div class="d-flex gap-2">
-                        <button type="button" class="btn btn-warning flex-grow-1 fw-bold"
-                            onclick="copyDraftAndOpenTemplate()">コピー & テンプレートを開く</button>
-                        <button type="button" class="btn btn-secondary flex-grow-1"
-                            data-bs-dismiss="offcanvas">キャンセル</button>
-                    </div>
-                    <button type="button" class="btn btn-primary w-100 fw-bold py-2"
-                        onclick="addItemFromSidebar()">明細なし</button>
-                </div>
-            </div>
-        </div>
-
-    </div>
-
-    <div class="offcanvas offcanvas-end shadow" tabindex="-1" id="procOffcanvas" style="width:400px">
-            <div class="offcanvas-header">
-                <h6 class="offcanvas-title fw-bold">加工入力</h6><button type="button" class="btn-close btn-close-white"
-                    data-bs-dismiss="offcanvas"></button>
-            </div>
-            <div class="offcanvas-body p-3">
-                <!-- フィルタエリア -->
-                <div class="row g-2 mb-3">
-                    <div class="col-6">
-                        <label class="small fw-bold mb-1">エリアで絞る</label>
-                        <select id="procAreaFilter" class="form-select form-select-sm" onchange="onAreaFilterChange()">
-                            <option value="">すべて</option>
-                        </select>
-                    </div>
-                    <div class="col-6">
-                        <label class="small fw-bold mb-1">加工位置で絞る</label>
-                        <select id="procPosFilter" class="form-select form-select-sm" onchange="filterQuickProc()">
-                            <option value="">すべて</option>
-                        </select>
-                    </div>
-                </div>
-                <!-- 検索ボックス -->
-                <div class="mb-3">
-                    <div class="input-group input-group-sm shadow-sm">
-                        <span class="input-group-text bg-white border-end-0"><i
-                                class="fas fa-search text-muted"></i></span>
-                        <input type="text" id="procSearchInput" class="form-control border-start-0"
-                            placeholder="キーワードで絞り込み（例：右胸、刺繍）" oninput="filterQuickProc()">
-                    </div>
-                </div>
-
-                <!-- クイック選択パネル -->
-                <div class="mb-3">
-                    <label class="sidebar-label d-flex justify-content-between">クイック選択 <span class="badge bg-secondary"
-                            id="quickProcCount">0</span></label>
-                    <div id="quickProcContainer"
-                        class="list-group list-group-flush border rounded bg-white overflow-auto shadow-sm"
-                        style="max-height: 400px; font-size: 1.1rem;">
-                        <!-- JSで動的にパターンが表示される -->
-                        <div class="p-3 text-center text-muted">マスタを読み込み中...</div>
-                    </div>
-                </div>
-
-                <!-- 詳細設定（折りたたみ式） -->
-                <div class="accordion accordion-flush shadow-sm rounded border" id="procDetailAccordion">
-                    <div class="accordion-item rounded">
-                        <h2 class="accordion-header">
-                            <button class="accordion-button collapsed py-2 small fw-bold text-primary" type="button"
-                                data-bs-toggle="collapse" data-bs-target="#collapseDetail">
-                                <i class="fas fa-sliders-h me-2"></i>詳細を手動で設定
-                            </button>
-                        </h2>
-                        <div id="collapseDetail" class="accordion-collapse collapse"
-                            data-bs-parent="#procDetailAccordion">
-                            <div class="accordion-body p-2 bg-white">
-                                <div class="row g-2 mb-2">
-                                    <div class="col-6"><label class="sidebar-label">エリア</label><select id="m_area"
-                                            class="form-select form-select-sm"></select></div>
-                                    <div class="col-6"><label class="sidebar-label">位置</label><select id="m_pos"
-                                            class="form-select form-select-sm"></select></div>
-                                    <div class="col-6"><label class="sidebar-label">分類</label><select id="m_cat"
-                                            class="form-select form-select-sm"></select></div>
-                                    <div class="col-6"><label class="sidebar-label">方法</label><select id="m_method"
-                                            class="form-select form-select-sm"></select></div>
-                                </div>
-                                <div class="row g-2 mb-2">
-                                    <div class="col-6"><label class="sidebar-label">色数/パターン</label><select id="m_count"
-                                            class="form-select form-select-sm" onchange="updateColorInputs()"></select>
-                                    </div>
-                                    <div class="col-6"><label class="sidebar-label">色替え</label><select id="m_change"
-                                            class="form-select form-select-sm" onchange="updateColorInputs()">
-                                            <option value="無">色替無</option>
-                                            <option value="有">色替有</option>
-                                        </select></div>
-                                </div>
-                                <div class="form-check form-switch mb-2">
-                                    <input class="form-check-input" type="checkbox" id="m_color_individual"
-                                        onchange="updateColorInputs()">
-                                    <label class="form-check-label small fw-bold"
-                                        for="m_color_individual">本体色ごとに個別指定</label>
-                                </div>
-                                <div id="dynamicColorContainer" class="mt-2"></div>
-                                <button type="button" class="btn btn-primary btn-sm w-100 mt-2 py-1"
-                                    onclick="addProcFromSidebar()">
-                                    <i class="fas fa-plus me-1"></i>この内容でリストに追加
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 襟タグオプション（単独で残す） -->
-                <div class="card border-0 shadow-sm mt-3">
-                    <div class="card-body p-2 d-flex justify-content-between align-items-center">
-                        <span class="fw-bold small px-2">襟タグオプション</span>
-                        <div class="btn-group" role="group">
-                            <input type="radio" class="btn-check" name="btnradio_eri" id="btnradio_eri_off"
-                                autocomplete="off" checked>
-                            <label class="btn btn-outline-secondary btn-sm" for="btnradio_eri_off"
-                                onclick="removeEriTag()">無</label>
-                            <input type="radio" class="btn-check" name="btnradio_eri" id="btnradio_eri_on"
-                                autocomplete="off">
-                            <label class="btn btn-outline-primary btn-sm" for="btnradio_eri_on"
-                                onclick="addEriTag()">有</label>
-                        </div>
-                    </div>
-                </div>
-                <div class="offcanvas-footer p-3 bg-white border-top text-end"><button type="button"
-                        class="btn btn-secondary me-2" data-bs-dismiss="offcanvas">閉じる</button><button type="button"
-                        class="btn btn-primary px-4" onclick="addProcFromSidebar()">リストに追加</button></div>
-            </div>
-
-            <div class="modal fade" id="pdfPreviewModal" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-fullscreen">
-                    <div class="modal-content">
-                        <div class="modal-header bg-dark text-white py-2">
-                            <h6>PDFプレビュー</h6><button type="button" class="btn-close btn-close-white"
-                                data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body p-0"><iframe id="pdfPreviewFrame"
-                                style="width:100%;height:100%;border:none"></iframe></div>
-                        <div class="modal-footer">
-                            <button class="btn btn-outline-primary fw-bold" onclick="downloadCurrentPdf()"
-                                id="modalDownloadBtn">
-                                <i class="fas fa-download me-1"></i>PDF直接ダウンロード
-                            </button>
-                            <button class="btn btn-secondary" data-bs-dismiss="modal">閉じる</button>
-                            <button class="btn btn-primary px-5" onclick="confirmAndSend()">注文確定</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="modal fade" id="billingModal" tabindex="-1">
-                <div class="modal-dialog modal-lg">
-                    <div class="modal-content">
-                        <div class="modal-header bg-dark text-white">
-                            <h6 class="modal-title">請求書</h6><button type="button" class="btn-close btn-close-white"
-                                data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body bg-light">
-                            <div class="card p-3 mb-3 border-0 shadow-sm">
-                                <div class="row">
-                                    <div class="col-6"><small class="text-muted">物件名</small>
-                                        <div class="fw-bold" id="bill_team"></div>
-                                    </div>
-                                    <div class="col-6 text-end"><small class="text-muted">顧客名</small>
-                                        <div class="fw-bold" id="bill_customer"></div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="bg-white p-3 border rounded">
-                                <table class="table table-sm table-bordered align-middle mb-0">
-                                    <thead class="bg-light">
-                                        <tr>
-                                            <th>内訳</th>
-                                            <th width="80">数量</th>
-                                            <th width="120">単価</th>
-                                            <th width="120">金額</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="billingTableBody"></tbody>
-                                    <tfoot class="bg-light">
-                                        <tr>
-                                            <td colspan="3" class="text-end fw-bold">小計</td>
-                                            <td class="text-end fw-bold" id="bill_subtotal">0</td>
-                                        </tr>
-                                        <tr>
-                                            <td colspan="3" class="text-end fw-bold">消費税</td>
-                                            <td class="text-end fw-bold" id="bill_tax">0</td>
-                                        </tr>
-                                        <tr>
-                                            <td colspan="3" class="text-end fw-bold text-danger h5 m-0">ご請求金額</td>
-                                            <td class="text-end fw-bold text-danger h5 m-0" id="bill_total">0</td>
-                                        </tr>
-                                    </tfoot>
-                                </table>
-                            </div>
-                        </div>
-                        <div class="modal-footer"><button class="btn btn-secondary"
-                                data-bs-dismiss="modal">閉じる</button><button class="btn btn-primary fw-bold px-4"
-                                onclick="saveBillingData(true)">発行</button></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 通知用トーストコンテナ -->
-            <div id="notificationContainer"
-                style="position:fixed; bottom:20px; right:20px; z-index:10000; display:flex; flex-direction:column; gap:10px; pointer-events:none;">
-            </div>
-
-            <div id="pdfExportContainer" style="position:fixed; left:-9999px; top:0; z-index:-100; overflow:hidden">
-                <div id="pdfExportArea"
-                    style="width:1123px; height:794px; background:#fff; border:2px solid #000; padding:0; box-sizing:border-box">
-                    <div class="pdf-header-container"
-                        style="background:#343a40; color:#fff; padding:12px 25px; height:70px; display:flex; align-items:center; justify-content:space-between; border-bottom:2px solid #000">
-                        <div class="pdf-header-row-1"
-                            style="width:100%; display:flex; justify-content: space-between; align-items:center">
-                            <h1 style="margin:0; font-size:36px; font-weight:bold;">加工指示書</h1>
-                            <div class="pdf-header-right-block" style="text-align:right;">
-                                <div style="font-size:14px; font-weight:bold;">顧客: <span id="p-customer"></span> / 担当:
-                                    <span id="p-manager"></span> / No: <span id="p-order-id"></span> <span
-                                        id="p-admin-no-suffix-container" style="display:none; color:red;">/ 末尾: <span
-                                            id="p-admin-no-suffix"></span></span>
-                                </div>
-                                <div style="font-size:14px; font-weight:bold; margin-top:2px;">
-                                    <span id="p-type" style="color:#ffc107"></span> / <span id="p-team"></span> / 発注日:
-                                    <span id="p-order-date" style="color:#ffc107"></span> / 納期: <span id="p-delivery"
-                                        style="color:#ffc107"></span> / 合計: <span id="p-total-qty"
-                                        style="color:#ffc107; font-size:16px;">0</span> 枚
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="pdf-main-flex" style="display:flex; height:720px;">
-                        <div class="pdf-design-side"
-                            style="flex:6.5; border-right:2px solid #000; padding:10px; display:flex; flex-direction:column;">
-                        </div>
-                        <div class="pdf-list-side" style="flex:3.5; padding:10px;"></div>
-                    </div>
-                </div>
-            </div>
-            <div id="pdfExportContainer_Portrait"
-                style="position:fixed; left:-9999px; top:0; z-index:-100; width:794px; height:1123px; overflow:hidden">
-                <div id="pdfExportArea_Portrait"
-                    style="width:794px; height:1123px; background:white; color:black; font-family:'Noto Sans JP',sans-serif; box-sizing:border-box; padding:15px; border:1px solid #ccc; position:relative">
-                    <div class="d-flex justify-content-between align-items-end mb-1">
-                        <div style="font-size:24px; font-weight:bold;">福岡 _ 羽盛</div>
-                        <div style="font-size:18px; border-bottom:1px solid #000; width:65%; display:flex;">
-                            チーム名 <span id="pp-team" style="flex-grow:1; text-align:center; font-weight:bold;"></span>
-                        </div>
-                    </div>
-                    <table class="pp-table"
-                        style="width:100%; border-collapse:collapse; border:1px solid #000; margin-bottom:10px;">
-                        <colgroup>
-                            <col style="width:15%">
-                            <col style="width:35%">
-                            <col style="width:15%">
-                            <col style="width:35%">
-                        </colgroup>
-                        <tr>
-                            <th
-                                style="background:#eee; border:1px solid #000; padding:6px 2px; font-weight:normal; font-size:18px;">
-                                発注NO</th>
-                            <td id="pp-order-no"
-                                style="border:1px solid #000; padding:6px 2px 6px 5px; font-size:18px;">
-                            </td>
-                            <th
-                                style="background:#eee; border:1px solid #000; padding:6px 2px; font-weight:normal; font-size:18px;">
-                                管理番号</th>
-                            <td style="border:1px solid #000; padding:6px 2px 6px 5px; font-size:18px;">FKZ羽-<span
-                                    id="pp-admin-no-suffix"></span></td>
-                        </tr>
-                        <tr>
-                            <th
-                                style="background:#eee; border:1px solid #000; padding:6px 2px; font-weight:normal; font-size:18px;">
-                                新規／追加</th>
-                            <td id="pp-order-type"
-                                style="border:1px solid #000; padding:6px 2px 6px 5px; font-size:18px;">
-                            </td>
-                            <th
-                                style="background:#eee; border:1px solid #000; padding:6px 2px; font-weight:normal; font-size:18px;">
-                                顧客名</th>
-                            <td id="pp-customer"
-                                style="border:1px solid #000; padding:6px 2px 6px 5px; font-size:18px;">
-                            </td>
-                        </tr>
-                        <tr>
-                            <th
-                                style="background:#eee; border:1px solid #000; padding:6px 2px; font-weight:normal; font-size:18px;">
-                                COLOR 設定
-                            </th>
-                            <td id="pp-color-info"
-                                style="border:1px solid #000; text-align:center; background-color:#add8e6; font-weight:bold; padding:6px 2px; font-size:18px;">
-                            </td>
-                            <th
-                                style="background:#eee; border:1px solid #000; padding:6px 2px; font-weight:normal; font-size:18px;">
-                                商品名</th>
-                            <td id="pp-product-name"
-                                style="border:1px solid #000; padding:6px 2px 6px 5px; font-size:18px;">
-                            </td>
-                        </tr>
-                        <tr>
-                            <th
-                                style="background:#eee; border:1px solid #000; padding:6px 2px; font-weight:normal; font-size:18px;">
-                                発注日</th>
-                            <td id="pp-order-date"
-                                style="border:1px solid #000; padding:6px 2px 6px 5px; background-color:#ffff00; font-size:18px;">
-                            </td>
-                            <th
-                                style="background:#eee; border:1px solid #000; padding:6px 2px; font-weight:normal; font-size:18px;">
-                                生地</th>
-                            <td id="pp-fabric" style="border:1px solid #000; padding:6px 2px 6px 5px; font-size:18px;">
-                            </td>
-                        </tr>
-                        <tr>
-                            <th
-                                style="background:#eee; border:1px solid #000; padding:6px 2px; font-weight:normal; font-size:18px;">
-                                納期日</th>
-                            <td id="pp-delivery"
-                                style="border:1px solid #000; padding:6px 2px 6px 5px; background-color:#ffff00; font-weight:bold; color:red; font-size:18px;">
-                            </td>
-                            <th
-                                style="background:#eee; border:1px solid #000; padding:6px 2px; font-weight:normal; font-size:18px;">
-                                型紙品番</th>
-                            <td id="pp-pattern-no"
-                                style="border:1px solid #000; padding:6px 2px 6px 5px; font-size:18px;">
-                            </td>
-                        </tr>
-                        <tr>
-                            <th
-                                style="background:#eee; border:1px solid #000; padding:6px 2px; font-weight:normal; font-size:18px;">
-                                裁断品発送日</th>
-                            <td style="border:1px solid #000; padding:6px 2px; font-size:16px;"></td>
-                            <th
-                                style="background:#eee; border:1px solid #000; padding:6px 2px; font-weight:normal; font-size:18px;">
-                                価格</th>
-                            <td id="pp-price" style="border:1px solid #000; padding:6px 2px 6px 5px; font-size:18px;">
-                            </td>
-                        </tr>
-                    </table>
-                    <div class="pp-design-area"
-                        style="width:100%; height:384px; border:2px solid #000; margin-bottom:10px; display:flex; align-items:center; justify-content:center;">
-                    </div>
-                    <table class="pp-table" id="pp-size-table"
-                        style="width:100%; border-collapse:collapse; border:2px solid #000; margin-bottom:15px; font-size:16px;">
-                        <thead></thead>
-                        <tbody></tbody>
-                    </table>
-                    <div
-                        style="text-align:right; font-weight:bold; margin-bottom:5px; border:1px solid #000; padding:2px 5px; margin-left:auto; float:right; font-size:14px;">
-                        合計 <span id="pp-total-qty-display">0</span> 枚</div>
-                    <div style="clear:both;"></div>
-                    <div class="pp-list-container" style="display:flex; gap:5px; align-items:flex-start;">
-                        <div class="pp-list-col" style="flex:1">
-                            <table class="pp-table" id="pp-list-table-1"
-                                style="width:100%; border-collapse:collapse; border:1px solid #000; font-size:15px;">
-                                <thead>
-                                    <tr style="background:#eee;">
-                                        <th style="border:1px solid #000; width:30px;"></th>
-                                        <th style="border:1px solid #000; width:40px;">サイズ</th>
-                                        <th style="border:1px solid #000; width:40px;">番号</th>
-                                        <th style="border:1px solid #000;">NAME</th>
-                                    </tr>
-                                </thead>
-                                <tbody></tbody>
-                            </table>
-                        </div>
-                        <div class="pp-list-col" style="flex:1">
-                            <table class="pp-table" id="pp-list-table-2"
-                                style="width:100%; border-collapse:collapse; border:1px solid #000; font-size:15px;">
-                                <thead>
-                                    <tr style="background:#ccc;">
-                                        <th style="border:1px solid #000; width:30px;"></th>
-                                        <th style="border:1px solid #000; width:40px;">サイズ</th>
-                                        <th style="border:1px solid #000; width:40px;">番号</th>
-                                        <th style="border:1px solid #000;">NAME</th>
-                                    </tr>
-                                </thead>
-                                <tbody></tbody>
-                            </table>
-                        </div>
-                        <div class="pp-list-col" style="flex:1">
-                            <table class="pp-table" id="pp-list-table-3"
-                                style="width:100%; border-collapse:collapse; border:1px solid #000; font-size:15px;">
-                                <thead>
-                                    <tr style="background:#ccc;">
-                                        <th style="border:1px solid #000; width:30px;"></th>
-                                        <th style="border:1px solid #000; width:40px;">サイズ</th>
-                                        <th style="border:1px solid #000; width:40px;">番号</th>
-                                        <th style="border:1px solid #000;">NAME</th>
-                                    </tr>
-                                </thead>
-                                <tbody></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div id="invoiceExportContainer"
-                style="position:fixed; left:-9999px; top:0; width:794px; height:1123px; background:white; z-index:-100">
-                <div id="invoiceExportArea" style="width:794px; height:1123px; padding:40px; box-sizing:border-box;">
-                    <h1 style="border-bottom:2px solid #000;">御請求書</h1>
-                    <div>
-                        <h3 id="inv_customer"></h3>
-                        <div style="text-align:right;">ご請求金額: ¥<span id="inv_grand_total"></span></div>
-                    </div>
-                    <table style="width:100%; border-collapse:collapse; margin-top:20px;">
-                        <thead>
-                            <tr style="background:#eee;">
-                                <th style="border:1px solid #000; padding:5px;">内容</th>
-                                <th style="border:1px solid #000; padding:5px;">金額</th>
-                            </tr>
-                        </thead>
-                        <tbody id="inv_tbody"></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
-            <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-            <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-            <script>
                 // --- 初期設定 ---
                 const firebaseConfig = { apiKey: "AIzaSyBz92RqFbXG9a-qtlkVkE1hWtc5OHrHcyc", authDomain: "msk579-3d7a9.firebaseapp.com", projectId: "msk579-3d7a9", storageBucket: "msk579-3d7a9.firebasestorage.app", messagingSenderId: "526065053874", appId: "1:526065053874:web:9f6bf22ab69313a83b19ab" };
                 let db = null;
@@ -1889,12 +12,11 @@
                 const ORDER_PDF_FOLDER_ID = "1hfMtlxaD6M5N5cEmfKMGIhIkw_3_ZahA";
 
                 // --- マスタデータ ---
-                const SPORTS = ["野球", "サッカー", "バレー", "バスケ", "陸上", "ハンドボール", "ラグビー", "卓球", "テニス", "バドミントン", "ドッジボール", "その他"];
+                const SPORTS = ["野球", "サッカー", "バレー", "バスケ", "陸上", "ハンドボール", "ラグビー", "卓球", "その他"];
                 const PRODUCTS_BASEBALL = ["ユニフォーム", "ユニフォームパンツ", "プラシャツ", "Tシャツ", "ポロシャツ", "CAP", "ジャージ", "ハーフパンツ", "アンダーシャツ", "グラコン", "ジャンバー", "ウィンドブレーカー", "フリース", "スウェット", "バッグ", "ヘルメット", "その他"];
                 const PRODUCTS_SOCCER = ["サッカーユニフォーム", "サッカーパンツ", "プラシャツ", "Tシャツ", "ジャージ", "ハーフパンツ", "ウィンドブレーカー", "ストッキング", "ピステ", "ジャージパンツ", "その他"];
                 const PRODUCTS_BASKET = ["バスケユニフォーム", "バスケパンツ", "リバーシブル", "Tシャツ", "ロングTシャツ", "スウェット", "ジャージ", "ウィンドブレーカー", "その他"];
                 const PRODUCTS_VOLLEY = ["バレーユニフォーム", "バレーパンツ", "プラシャツ", "Tシャツ", "ハーフパンツ", "ジャージ", "スウェット", "その他"];
-                const PRODUCTS_DODGE = ["ドッジユニフォーム", "ドッジパンツ", "プラシャツ", "Tシャツ", "その他"];
                 const PRODUCTS_COMMON = ["ユニフォーム", "ユニフォームパンツ", "プラシャツ", "Tシャツ", "ロングTシャツ", "ポロシャツ", "ジャージ", "ハーフパンツ", "アンダーシャツ", "ジャンバー", "ウィンドブレーカー", "フリース", "スウェット", "リバーシブル", "その他"];
 
                 let PROC_AREAS = { "シャツ前面": ["全胸", "左胸", "右胸", "胸番号", "ポケット内", "前裾下_右", "前裾下_左", "襟タグ"], "シャツ後面": ["全背", "背番号", "背中_襟下", "背中_裾下", "背中_襟下_右", "背中_襟下_左", "背中_腰下"], "袖": ["左袖", "右袖", "左袖番", "右袖番"], "ハーフパンツ": ["左前", "右前", "左前番", "右前番", "左後ろ", "右後ろ", "左サイド", "右サイド", "左腰", "右腰"], "ロングパンツ": ["左前", "右前", "左前番", "右前番", "左後ろ", "右後ろ", "左サイド", "右サイド", "左腰", "右腰"], "CAP": ["前面", "左サイド", "右サイド", "後", "左サイド番", "右サイド番", "後番号"], "ヘルメット": ["前面", "左サイド", "右サイド", "後"], "その他": [] };
@@ -2367,35 +489,33 @@
                     }
 
                     if (window.currentUser) {
-                        try {
-                            await loadProcessingMaster(); // 加工マスタを読み込み
-                            document.getElementById('loginModal').style.display = 'none';
-                            initProcModalDropdowns();
-                            initSportDropdown();
-                            initCalendar();
-                            const u = window.currentUser;
-                            if (u.isAdmin) {
-                                document.body.classList.add('admin-mode');
-                                showScreen('dashboardScreen');
-                                loadDashboard();
-                                document.getElementById('sidebarTitle').innerHTML = 'ZO MSK <span class="badge bg-danger ms-1" style="font-size:0.6em">管理者</span>';
-                                document.getElementById('menuUserInfo').innerHTML = '<span class="badge bg-danger">管理者</span>';
-                                document.getElementById('adminMenuTools').style.display = 'block';
-                            } else {
-                                document.body.classList.remove('admin-mode');
-                                document.getElementById('sidebarTitle').innerText = 'ZO MSK';
-                                document.getElementById('menuUserInfo').innerText = `${u.customer} 様`;
-                                document.getElementById('adminMenuTools').style.display = 'none';
-                                document.getElementById('customerName').value = u.customer;
-                                document.getElementById('managerName').value = u.manager;
-                                if (isFullSubMode && u.pdfFullSub) {
-                                    document.getElementById('pdfUrlInput').value = u.pdfFullSub;
-                                    dataFolderUrl = u.pdfFullSub;
-                                } else if (u.folderUrlStandard || u.pdf) {
-                                    const val = u.folderUrlStandard || u.pdf;
-                                    document.getElementById('pdfUrlInput').value = val;
-                                    dataFolderUrl = val;
-                                }
+                        await loadProcessingMaster(); // 加工マスタを読み込み
+                        document.getElementById('loginModal').style.display = 'none';
+                        initProcModalDropdowns();
+                        initSportDropdown();
+                        initCalendar();
+                        const u = window.currentUser;
+                        if (u.isAdmin) {
+                            document.body.classList.add('admin-mode');
+                            showScreen('dashboardScreen');
+                            loadDashboard();
+                            document.getElementById('sidebarTitle').innerHTML = 'ZO MSK <span class="badge bg-danger ms-1" style="font-size:0.6em">管理者</span>';
+                            document.getElementById('menuUserInfo').innerHTML = '<span class="badge bg-danger">管理者</span>';
+                            document.getElementById('adminMenuTools').style.display = 'block';
+                        } else {
+                            document.body.classList.remove('admin-mode');
+                            document.getElementById('sidebarTitle').innerText = 'ZO MSK';
+                            document.getElementById('menuUserInfo').innerText = `${u.customer} 様`;
+                            document.getElementById('adminMenuTools').style.display = 'none';
+                            document.getElementById('customerName').value = u.customer;
+                            document.getElementById('managerName').value = u.manager;
+                            if (isFullSubMode && u.pdfFullSub) {
+                                document.getElementById('pdfUrlInput').value = u.pdfFullSub;
+                                dataFolderUrl = u.pdfFullSub;
+                            } else if (u.folderUrlStandard || u.pdf) {
+                                const val = u.folderUrlStandard || u.pdf;
+                                document.getElementById('pdfUrlInput').value = val;
+                                dataFolderUrl = val;
                             }
                             currentGasUrl = (isFullSubMode ? (u.gasUrlFullSub || u.gasUrlStandard || u.gasUrl) : (u.gasUrlStandard || u.gasUrl)) || "";
                             window.currentParentOrderId = null;
@@ -2403,13 +523,9 @@
                             document.getElementById('orderDate').value = getLocalDateString(new Date());
                             updateDeliveryDate();
                             showScreen('menuScreen');
-                        } catch (initErr) {
-                            console.error("Login Post-Process Error:", initErr);
-                            alert("ログイン後の読み込みに失敗しました: " + initErr.message);
                         }
                     } else {
-                        if (msg) msg.innerText = "IDまたはパスワードが正しくありません。";
-                        alert("ログインに失敗しました。IDとパスワードを確認してください。\n(管理者の方は admin / admin9999 をお試しください)");
+                        if (msg) msg.innerText = "ID/PWが違います";
                     }
                 }
                 
@@ -2527,7 +643,6 @@
                     else if (s === 'サッカー') l = PRODUCTS_SOCCER;
                     else if (s === 'バスケ') l = PRODUCTS_BASKET;
                     else if (s === 'バレー') l = PRODUCTS_VOLLEY;
-                    else if (s === 'ドッジボール') l = PRODUCTS_DODGE;
                     l.forEach(x => c.appendChild(new Option(x, x)))
                 }
 
@@ -2954,24 +1069,21 @@
                     selectedModalItem = itemMasterData.find(i => i.品番 === n);
                     if (!selectedModalItem) return;
 
-                    const titleEl = document.getElementById('selectedItemTitle') || document.querySelector('#selectedItemTitle');
-                    if (titleEl) {
-                        // 2列目(カテゴリ)と4列目(商品名)を厳密に区別
-                        const prodName = selectedModalItem.商品名 || "";
-                        const catTitle = selectedModalItem.カテゴリ || selectedModalItem.商品 || "";
-                        const makerName = selectedModalItem.メーカー || '-';
-                        const itemNo = selectedModalItem.品番;
-                        
-                        // リクエスト通り「品番_商品名」の形式で表示
-                        const fullDisplayTitle = prodName ? `${itemNo}_${prodName}` : itemNo;
-                        
-                        titleEl.innerHTML = `
-                            <div class="h5 m-0 fw-bold" style="color:#fff;">${fullDisplayTitle}</div>
-                            <div style="font-size:0.75rem; opacity:0.9; color:#fff;" class="font-monospace">
-                                ${catTitle ? `カテゴリ: ${catTitle} / ` : ''}メーカー: ${makerName}
-                            </div>
-                        `;
-                    }
+                    // 2列目(カテゴリ)と4列目(商品名)を厳密に区別
+                    const prodName = selectedModalItem.商品名 || "";
+                    const catTitle = selectedModalItem.カテゴリ || selectedModalItem.商品 || "";
+                    const makerName = selectedModalItem.メーカー || '-';
+                    const itemNo = selectedModalItem.品番;
+                    
+                    // リクエスト通り「品番_商品名」の形式で表示
+                    const fullDisplayTitle = prodName ? `${itemNo}_${prodName}` : itemNo;
+                    
+                    document.getElementById('selectedItemTitle').innerHTML = `
+                        <div class="h5 m-0 fw-bold" style="color:#fff;">${fullDisplayTitle}</div>
+                        <div style="font-size:0.75rem; opacity:0.9; color:#fff;" class="font-monospace">
+                            ${catTitle ? `カテゴリ: ${catTitle} / ` : ''}メーカー: ${makerName}
+                        </div>
+                    `;
 
                     document.getElementById('modalInputArea').innerHTML = '';
                     addModalColorRow();
@@ -3312,9 +1424,17 @@
                     document.querySelectorAll('.sb-qty').forEach(q => q.value = "");
                     document.getElementById('sb-total-display').innerText = "0";
 
+                    // 一括入力エリア: フル昇華モードかつ持ち込みでないときだけ表示
+                    var bulkArea = document.getElementById('sbBulkInputArea');
+                    if (bulkArea) {
+                        bulkArea.style.display = (isFullSubMode && !forCarryIn) ? 'block' : 'none';
+                        var bulkTextarea = document.getElementById('sb_bulk_paste');
+                        if (bulkTextarea && isFullSubMode) bulkTextarea.value = '';
+                    }
+
                     let useFreeInput = forCarryIn;
                     const sbNameRow = document.getElementById('sbNameRow');
-                    if (sbNameRow) sbNameRow.style.display = useFreeInput ? 'none' : 'block';
+                    if (sbNameRow) sbNameRow.style.display = (useFreeInput || isFullSubMode) ? 'none' : 'block';
                     const sbProductNameRow = document.getElementById('sbProductNameRow');
                     if (sbProductNameRow) sbProductNameRow.style.display = useFreeInput ? 'block' : 'none';
 
@@ -3545,6 +1665,87 @@
                     const inst = bootstrap.Offcanvas.getInstance(document.getElementById('itemInputSidebar'));
                     if (inst) inst.hide();
                     new bootstrap.Offcanvas(document.getElementById('excelImportSidebar')).show();
+                }
+
+
+                function applyBulkPasteToSidebar() {
+                    var text = document.getElementById('sb_bulk_paste').value.trim();
+                    if (!text) return alert('一括入力欄にデータを貼り付けてください。');
+
+                    var lines = text.split(/\r\n|\n/);
+                    var counts = {};
+                    var parsedPlayers = [];
+                    var detectedItemNo = '';
+
+                    lines.forEach(function(l) {
+                        var cols = l.split('\t');
+                        if (cols.length < 2) cols = l.trim().split(/\s+/);
+                        if (cols.length < 2) return;
+                        if (cols[0].indexOf('サイズ') >= 0 || cols[0].indexOf('番号') >= 0 || l.indexOf('品番') >= 0) return;
+
+                        var itemNo = '', size = '', num = '', name = '';
+                        if (cols.length >= 4) {
+                            itemNo = cols[0].trim(); size = cols[1].trim().toUpperCase(); num = cols[2].trim(); name = cols[3].trim();
+                        } else if (cols.length === 3) {
+                            if (/^[A-Za-z0-9_\-]{4,}$/.test(cols[0].trim())) {
+                                itemNo = cols[0].trim(); size = cols[1].trim().toUpperCase(); num = cols[2].trim();
+                            } else {
+                                size = cols[0].trim().toUpperCase(); num = cols[1].trim(); name = cols[2].trim();
+                            }
+                        } else {
+                            size = cols[0].trim().toUpperCase(); num = cols[1].trim();
+                        }
+                        if (itemNo && !detectedItemNo) detectedItemNo = itemNo;
+                        if (size) {
+                            counts[size] = (counts[size] || 0) + 1;
+                            parsedPlayers.push({ num: num, name: name, size: size });
+                        }
+                    });
+
+                    if (parsedPlayers.length === 0) return alert('有効なデータが見つかりませんでした。');
+
+                    var qtyInputs = document.querySelectorAll('.sb-qty');
+                    var sizeHiddens = document.querySelectorAll('.sb-size');
+                    var totalQty = 0;
+                    qtyInputs.forEach(function(inp, idx) {
+                        var s = sizeHiddens[idx].value.toUpperCase();
+                        if (counts[s]) { inp.value = counts[s]; totalQty += counts[s]; } else { inp.value = ''; }
+                    });
+                    var totalDisp = document.getElementById('sb-total-display');
+                    if (totalDisp) totalDisp.innerText = totalQty;
+
+                    if (isFullSubMode) {
+                        var pName = (document.getElementById('sb_product_name') || {}).value || '';
+                        pName = pName.trim();
+                        var pNo = detectedItemNo || ((document.getElementById('sb_pattern') || {}).value || '').trim();
+                        var pFabric = ((document.getElementById('sb_fabric') || {}).value || '').trim();
+
+                        if (!pName && !pNo) {
+                            window._currentSidebarPlayers = parsedPlayers;
+                            syncDraftData();
+                            alert(parsedPlayers.length + '名分のデータを読み込みました。商品名と品番も入力してから「商品のみ登録」を押してください。');
+                            return;
+                        }
+
+                        productList.push({ no: pNo, name: pName || pNo, color: '', fabric: pFabric,
+                            quantities: JSON.parse(JSON.stringify(counts)), price: 0, url: '', contentType: '昇華アイテム' });
+
+                        parsedPlayers.forEach(function(p) {
+                            playerList.push({ num: p.num, name: p.name, info: '/' + p.size });
+                        });
+
+                        updateRightPanel();
+                        if (typeof renderPlayerList === 'function') renderPlayerList();
+                        var sbEl = document.getElementById('itemInputSidebar');
+                        var inst = bootstrap.Offcanvas.getInstance(sbEl);
+                        if (inst) inst.hide();
+                        alert('商品リストに1件、名簿に' + parsedPlayers.length + '名を登録しました。');
+                        return;
+                    }
+
+                    window._currentSidebarPlayers = parsedPlayers;
+                    syncDraftData();
+                    alert(parsedPlayers.length + '名分のデータを数量グリッドに反映しました。');
                 }
 
                 function addItemFromSidebar() {
@@ -4051,21 +2252,29 @@
                         });
                     }
 
-                    // --- 画像表示 (Cloud Functions経由) ---
+                    // --- 画像表示 (CORS対策版) ---
                     const i = document.getElementById("previewImg"), s = document.getElementById("loadingSpinner");
                     if (i && s) {
-                        i.style.display = "none"; s.style.display = "block";
-                        const ti = new Image(); ti.crossOrigin = "anonymous";
-                        ti.src = "https://us-central1-msk579-3d7a9.cloudfunctions.net/getDriveFile?id=" + fid;
-                        ti.onload = function() {
-                            const canvas = document.createElement("canvas"); canvas.width = ti.width; canvas.height = ti.height;
-                            canvas.getContext("2d").drawImage(ti, 0, 0);
-                            currentImgData = canvas.toDataURL("image/png"); i.src = currentImgData; i.style.display = "block"; s.style.display = "none";
+                        i.crossOrigin = "anonymous";
+                        // 直接プレビューURLを指定（sz=w1000で高画質化）
+                        i.src = `https://drive.google.com/thumbnail?id=${fid}&sz=w1000`;
+                        i.onload = function() {
+                            i.style.display = 'block';
+                            s.style.display = 'none';
+                            // ここでBase64に変換しておくとPDF生成が確実になります
+                            try {
+                                const canvas = document.createElement("canvas"); 
+                                canvas.width = i.naturalWidth || i.width; 
+                                canvas.height = i.naturalHeight || i.height;
+                                canvas.getContext("2d").drawImage(i, 0, 0);
+                                currentImgData = canvas.toDataURL("image/png"); 
+                            } catch(e) {
+                                currentImgData = i.src;
+                            }
                         };
-                        ti.onerror = function() {
-                            const turl = "https://drive.google.com/thumbnail?id=" + fid + "&sz=w1000";
-                            i.src = turl; i.onload = function() { i.style.display = "block"; s.style.display = "none"; currentImgData = turl; };
-                            i.onerror = function() { s.style.display = "none"; if (msg) msg.style.display = "block"; };
+                        i.onerror = function() {
+                            s.style.display = "none";
+                            if (msg) msg.style.display = "block";
                         };
                     }
                 }
@@ -4765,7 +2974,7 @@
                             logging: false
                         });
                         const imgData = canvas.toDataURL('image/jpeg', 0.9);
-                        const jsPDF = (window.jspdf && window.jspdf.jsPDF) ? window.jspdf.jsPDF : window.jsPDF;
+                        const { jsPDF } = window.jspdf;
                         if (!jsPDF) throw new Error("PDF生成ライブラリ(jsPDF)の読み込みに失敗しました。");
 
                         const doc = new jsPDF(isFullSubMode ? 'p' : 'l', 'mm', 'a4');
@@ -4872,7 +3081,4 @@
                 }
 
                 window.onload = function () { initCalendar() };
-            </script>
-</body>
-
-</html>
+            
